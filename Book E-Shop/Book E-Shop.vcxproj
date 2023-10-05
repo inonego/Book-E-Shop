@@ -131,6 +131,7 @@
     <ClCompile Include="DataComponent.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="MenuManager.cpp" />
+    <ClCompile Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataComponent.h" />
