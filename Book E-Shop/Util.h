@@ -1,11 +1,12 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 using namespace std;
 
 template <typename T>
-string join(T* array, string delimiter = ",") { 
+string join(vector<T> array, string delimiter = ",") { 
 	string result;
 
 	for (T value : array) {

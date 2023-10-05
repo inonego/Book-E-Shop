@@ -5,13 +5,24 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="헤더 파일">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="리소스 파일">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\데이터 관리">
+      <UniqueIdentifier>{343d3e09-1988-4a19-b27c-f8395429a201}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\데이터 관리\헤더">
+      <UniqueIdentifier>{e60f1f97-592e-485d-a043-8caf0c19cf4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\유틸">
+      <UniqueIdentifier>{1113f80a-53fd-4385-b058-6c4110d8e67b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\메뉴 관리">
+      <UniqueIdentifier>{7844e5c0-ff78-41ed-ba2c-b5c35c187deb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\메뉴 관리\헤더">
+      <UniqueIdentifier>{fc845d59-4178-440d-afc7-b5cca8df2ec7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -19,27 +30,36 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="DataComponent.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\데이터 관리</Filter>
     </ClCompile>
-    <ClCompile Include="Menu.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="MenuManager.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="DataManager.cpp">
+      <Filter>소스 파일\데이터 관리</Filter>
     </ClCompile>
     <ClCompile Include="Util.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\유틸</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>소스 파일\메뉴 관리</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuManager.cpp">
+      <Filter>소스 파일\메뉴 관리</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DataManager.h">
+      <Filter>소스 파일\데이터 관리\헤더</Filter>
+    </ClInclude>
     <ClInclude Include="DataComponent.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\데이터 관리\헤더</Filter>
     </ClInclude>
     <ClInclude Include="Menu.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\메뉴 관리\헤더</Filter>
     </ClInclude>
     <ClInclude Include="MenuManager.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\메뉴 관리\헤더</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>소스 파일\데이터 관리\헤더</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

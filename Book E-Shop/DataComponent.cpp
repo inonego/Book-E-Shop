@@ -28,9 +28,7 @@ Product* Product::Parse(string* data)
 
 string* Product::ToArray()
 {
-	string array[] = {to_string(id), title, genre, to_string(price), to_string(count)};
-
-	return array;
+	return &(vector<string> {to_string(id), title, genre, to_string(price), to_string(count) })[0];
 }
 
 Account* Account::Parse(string* data)
@@ -43,10 +41,8 @@ Account* Account::Parse(string* data)
 }
 
 string* Account::ToArray()
-{ 
-	string array[] = { name, id, password, phone_number, address, join<int>(&invoice_id_list[0])};
-
-	return array;
+{  
+	return &(vector<string> { name, id, password, phone_number, address, join<int>(invoice_id_list) })[0];
 }
 
 
@@ -60,8 +56,6 @@ Invoice* Invoice::Parse(string* data)
 }
 
 string* Invoice::ToArray()
-{ 
-	string array[] = { to_string(id), buyer_id, recipient_phone_number, recipient_address, date, to_string(product_id), to_string(product_count) };
-
-	return array;
+{  
+	return &(vector<string> { to_string(id), buyer_id, recipient_phone_number, recipient_address, date, to_string(product_id), to_string(product_count) })[0];
 }

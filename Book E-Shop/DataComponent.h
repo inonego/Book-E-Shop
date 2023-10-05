@@ -1,36 +1,13 @@
 #pragma once
 
-#include <string>
-#include <map>
-#include <vector>
-#include <functional>
+#include <string> 
+#include <vector> 
 
 using namespace std;
-
-template <typename T>
-class Parser {
-private:
-	function<T*(string)> parse = nullptr;
-
-public:	
-	string regex = ".*";
-	string msg_info = "";
-	string msg_error = "";
-	
-	Parser* set_regex(string regex) { this->regex = regex; return this; }
-	Parser* set_msg_info(string msg_info) { this->msg_info = msg_info; return this; }
-	Parser* set_msg_error(string msg_error) { this->msg_error = msg_error; return this; }
-
-	Parser* set_parse(function<T* (string)> parse) { this->parse = parse; return this; }
-
-	T* Parse(string input) {
-		return parse != nullptr ? parse(input) : nullptr;
-	}
-};
-
+ 
 class DataComponent
-{ 
-public:
+{  
+public: 
 	// 데이터 요소를 대표하는 키 값을 반환합니다.
 	virtual string GetKey() = 0;
 
@@ -51,7 +28,7 @@ public:
 	int count;
 
 	virtual string GetKey() override;
-	virtual Product* Parse(string* data);
+	virtual Product* Parse(string* data) override;
 	virtual string* ToArray() override;
 };
 
@@ -66,7 +43,7 @@ public:
 	vector<int> invoice_id_list;
 
 	virtual string GetKey() override;
-	virtual Account* Parse(string* data);
+	virtual Account* Parse(string* data) override;
 	virtual string* ToArray() override;
 };
 
@@ -82,6 +59,6 @@ public:
 	int product_count;
 
 	virtual string GetKey() override;
-	virtual Invoice* Parse(string* data);
+	virtual Invoice* Parse(string* data) override;
 	virtual string* ToArray() override;
 };
