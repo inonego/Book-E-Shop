@@ -2,9 +2,28 @@
 
 #include "Util.h"
 
+
+DataComponent::DataComponent() {}
+
+DataComponent::DataComponent(string* data) {}
+
+Product::Product() {}
+
+Product::Product(string* data)
+{
+
+}
+
 string Product::GetKey()
 {
 	return to_string(id);
+}
+
+Account::Account() {}
+
+Account::Account(string* data)
+{
+
 }
 
 string Account::GetKey()
@@ -12,18 +31,16 @@ string Account::GetKey()
 	return id;
 }
 
+Invoice::Invoice() {}
+
+Invoice::Invoice(string* data)
+{
+
+}
+
 string Invoice::GetKey()
 {
 	return to_string(id);
-}
-
-Product* Product::Parse(string* data)
-{
-	Product* product = new Product();
-
-	/* parse from data array */
-
-	return product;
 }
 
 string* Product::ToArray()
@@ -31,28 +48,9 @@ string* Product::ToArray()
 	return &(vector<string> {to_string(id), title, genre, to_string(price), to_string(count) })[0];
 }
 
-Account* Account::Parse(string* data)
-{
-	Account* account = new Account();
-
-	/* parse from data array */
-
-	return account;
-}
-
 string* Account::ToArray()
 {  
 	return &(vector<string> { name, id, password, phone_number, address, join<int>(invoice_id_list) })[0];
-}
-
-
-Invoice* Invoice::Parse(string* data)
-{
-	Invoice* invoice = new Invoice();
-
-	/* parse from data array */
-
-	return invoice;
 }
 
 string* Invoice::ToArray()
