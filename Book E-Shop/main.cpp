@@ -36,6 +36,7 @@ void menu() {
 		string id;
 
 		IO.input();
+		IO.pause();
 
 		IO.freeze([&](auto rollback) { 
 			while (true) {
@@ -61,17 +62,17 @@ void menu() {
 
 int main()
 {
-	menu_manager.AppendCommandFunc('z', []() {
+	menu_manager.IO.AppendCommandFunc('z', []() {
+		
+	});
 
-		});
+	menu_manager.IO.AppendCommandFunc('l', []() {
+		menu_manager.RunMenu("시작 메뉴화면", true);
+	});
 
-	menu_manager.AppendCommandFunc('l', []() {
-
-		});
-
-	menu_manager.AppendCommandFunc('q', []() {
-
-		});
+	menu_manager.IO.AppendCommandFunc('q', []() {
+		exit(0);
+	});
 
 	parser();
 

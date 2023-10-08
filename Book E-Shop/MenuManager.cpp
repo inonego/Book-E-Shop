@@ -9,9 +9,14 @@ void MenuManager::CleanUp()
 		delete iter->second;
 	}
 
-	menu_list.clear();
+	menu_list.clear(); 
+}
 
-	command_func_list.clear();
+void MenuManager::SetNextMenu(string menu_name)
+{ 
+	if (menu_list.find(menu_name) != menu_list.end()) {
+		next_menu = menu_list[menu_name];
+	}
 }
 
 MenuManager::MenuManager() : IO() {}
@@ -22,13 +27,23 @@ MenuManager::~MenuManager()
 }
 
 void MenuManager::Start(string start_menu_name)
-{  
-	try {
-		CallMenu(start_menu_name);
-	}
-	catch (int e) {
+{
+	SetNextMenu(start_menu_name);
 
-	}
+	while (next_menu) {
+		try {
+			next_menu->Execute(IO);
+
+			next_menu = nullptr;
+		}
+		catch (Event e) {
+			switch (e) {
+				case Event::MENU:
+
+				break;
+			} 
+		}
+	} 
 }
 
 void MenuManager::AppendMenu(string menu_name, Menu* menu)
@@ -43,26 +58,23 @@ void MenuManager::RemoveMenu(string menu_name)
 	menu_list.erase(menu_name);
 }
 
-void MenuManager::AppendCommandFunc(char command, function<void()> command_func)
+void MenuManager::RunMenu(string menu_name, bool recursive)
 {
-	if (command_func != nullptr) {
-		command_func_list.insert({ command, command_func });
-	}
-}
+	// 재귀적으로 메뉴를 실행하면 실행중인 메뉴 함수 안에서 다른 메뉴의 함수가 실행됩니다.
+	// 실행이 완료되면 이전 메뉴로 복귀하고 저장된 출력을 재출력합니다.
+	if (recursive) {
+		IO.freeze([&](auto rollback) {   
+			menu_list[menu_name]->Execute(IO);
 
-void MenuManager::RemoveCommandFunc(char command)
-{
-	command_func_list.erase(command);
-}
-
-void MenuManager::CallMenu(string menu_name)
-{
-	if (menu_list.find(menu_name) != menu_list.end()) {
-		menu_list[menu_name]->Execute(IO);
+			rollback();
+		});
 	}
+	//재귀적으로 메뉴를 실행하지 않으면 즉시 실행된 메뉴 함수에서 벗어나 다른 메뉴의 함수가 실행됩니다.
 	else {
-		throw;
-	}
+		SetNextMenu(menu_name);
+
+		throw Event::MENU;
+	} 
 }
  
 void MenuManager::Quit()
@@ -76,7 +88,48 @@ void MenuManager::Quit()
 
 #include <iostream>  
 
-void MenuManager::MenuIO::freeze(function<void(function<void(void)>)> body)
+string MenuIO::input_raw()
+{
+	string input;
+
+	getline(cin, input);
+
+	saved += input + '\n';
+
+	return input;
+}
+
+void MenuIO::ProcessCommand(char command)
+{
+	// 입력한 명령어가 목록에 있으면 명령어에 해당하는 기능 수행합니다.
+	if (HasCommand(command)) {
+		command_func_list[command]();
+	}
+}
+
+bool MenuIO::HasCommand(char command)
+{
+	return command_func_list.find(command) != command_func_list.end();
+}
+
+
+MenuIO::MenuIO() {}
+
+MenuIO::~MenuIO() {}
+
+void MenuIO::AppendCommandFunc(char command, function<void()> command_func)
+{
+	if (command_func != nullptr) {
+		command_func_list.insert({ command, command_func });
+	}
+}
+
+void MenuIO::RemoveCommandFunc(char command)
+{
+	command_func_list.erase(command); 
+}
+
+void MenuIO::freeze(function<void(function<void(void)>)> body)
 {
 	string freezed = saved;
 
@@ -89,34 +142,38 @@ void MenuManager::MenuIO::freeze(function<void(function<void(void)>)> body)
 	body(rollback);
 }
 
-void MenuManager::MenuIO::clear()
+void MenuIO::flush()
+{
+	saved = "";
+	this->reprint();
+}
+
+void MenuIO::clear()
 {
 	system("cls");
 }
 
-void MenuManager::MenuIO::print(string text)
+void MenuIO::print(string text)
 {
 	saved += text;
 
 	cout << text;
 }
 
-void MenuManager::MenuIO::reprint()
+void MenuIO::reprint()
 {
 	this->clear();
 
 	cout << saved;
 }
 
-string MenuManager::MenuIO::input()
+string MenuIO::input()
 {
 	string input;
 
 	this->freeze([&](auto rollback) {
 		while (true) { 
-			getline(cin, input);
-
-			saved += input + '\n';
+			input = this->input_raw();
 
 			// 명령어 처리
 			if (!input.empty() && input[0] == ':') {
@@ -125,21 +182,25 @@ string MenuManager::MenuIO::input()
 				// 입력한 명령어의 길이가 1이라면 명령어를 처리합니다.
 				if (input.length() == 1) {
 					char command = tolower(input[0]);
-					/*
-					// 입력한 명령어가 목록에 있으면 명령어에 해당하는 기능 수행합니다.
-					if (command_func_list.find(command) != command_func_list.end()) {
-						command_func_list[command]();
+
+					if (HasCommand(command)) {
+						ProcessCommand(command);
 					}
-					*/
-					return;
+					else{
+						// 명령어가 존재하지 않으면 오류 메시지를 출력하고 대기함
+						this->print("명령어가 존재하지 않습니다.\n");
+
+						this->pause();
+					}
 				}
 				else {
+					// 입력 형식 오류 시 오류 메시지를 출력하고 대기함
 					this->print("명령어는 맨 앞에 세미콜론(:)을 적고 그 뒤에 영문자 하나만 입력하세요.\n");
 
 					this->pause();
+				} 
 
-					rollback();
-				}
+				rollback();
 			}
 			else {
 				break;
@@ -150,7 +211,7 @@ string MenuManager::MenuIO::input()
 	return input;
 }
 
-string MenuManager::MenuIO::input(string msg_info, string pre)
+string MenuIO::input(string msg_info, string pre)
 {
 	if(msg_info != "") { 
 		this->print(msg_info + '\n');
@@ -161,7 +222,7 @@ string MenuManager::MenuIO::input(string msg_info, string pre)
 	return this->input();
 }
  
-any MenuManager::MenuIO::input(Parser* parser)
+any MenuIO::input(Parser* parser)
 {
 	any result;
 
@@ -175,6 +236,7 @@ any MenuManager::MenuIO::input(Parser* parser)
 				break;
 			}
 			else {
+				// 입력 형식 오류 시 오류 메시지를 출력하고 대기, 롤백함.
 				this->print(parser->msg_error + '\n');
 
 				this->pause(); 
@@ -187,8 +249,9 @@ any MenuManager::MenuIO::input(Parser* parser)
 	return result;
 }
 
-void MenuManager::MenuIO::pause()
+void MenuIO::pause()
 {
 	this->print("아무키나 입력하세요... \n");
-	this->input();
+
+	this->input_raw();
 }
