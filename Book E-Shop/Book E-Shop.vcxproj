@@ -131,7 +131,6 @@
     <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="DataComponent.cpp" />
-    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="MenuManager.cpp" />
     <ClCompile Include="ShopManager.cpp" />
     <ClCompile Include="Util.h" />
