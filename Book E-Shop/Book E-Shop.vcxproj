@@ -139,6 +139,7 @@
     <ClInclude Include="DataComponent.h" />
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="implement.h" />
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="ShopManager.h" />

@@ -1,6 +1,8 @@
 #include "MenuManager.h"
 #include "Menu.h"
 
+#include "Util.h"
+
 // ################### Menu Manager ###################
 
 void MenuManager::CleanUp()
@@ -32,7 +34,7 @@ void MenuManager::Start(string start_menu_name)
 
 	while (next_menu) {
 		try {
-			next_menu->Execute(IO);
+			(current_menu = next_menu)->Execute(IO);
 
 			next_menu = nullptr;
 		}
@@ -45,6 +47,13 @@ void MenuManager::Start(string start_menu_name)
 		}
 	} 
 }
+void MenuManager::SetMenu(string title, string menu_name, string prev_menu_name, set<char> command_availability)
+{
+	if (menu_list.find(menu_name) != menu_list.end()) {
+		menu_list[menu_name]->SetValue(title, prev_menu_name, command_availability);
+	}
+}
+
 
 void MenuManager::AppendMenu(string menu_name, Menu* menu)
 {
@@ -58,28 +67,32 @@ void MenuManager::RemoveMenu(string menu_name)
 	menu_list.erase(menu_name);
 }
 
+Menu* MenuManager::GetCurrentMenu()
+{
+	return current_menu;
+}
+
 void MenuManager::RunMenu(string menu_name, bool recursive)
 {
 	// 재귀적으로 메뉴를 실행하면 실행중인 메뉴 함수 안에서 다른 메뉴의 함수가 실행됩니다.
 	// 실행이 완료되면 이전 메뉴로 복귀하고 저장된 출력을 재출력합니다.
 	if (recursive) {
+		Menu* printed_menu = this->current_menu;
+
 		IO.freeze([&](auto rollback) {   
-			menu_list[menu_name]->Execute(IO);
+			(current_menu = menu_list[menu_name])->Execute(IO);
 
 			rollback();
 		});
+
+		this->current_menu = printed_menu;
 	}
 	//재귀적으로 메뉴를 실행하지 않으면 즉시 실행된 메뉴 함수에서 벗어나 다른 메뉴의 함수가 실행됩니다.
-	else {
+	else { 
 		SetNextMenu(menu_name);
 
 		throw Event::MENU;
 	} 
-}
- 
-void MenuManager::Quit()
-{
-	throw;
 }
 
 // ################### MenuIO ###################
@@ -87,55 +100,82 @@ void MenuManager::Quit()
 #include "Parser.h"
 
 #include <iostream>  
+#include <format>
 
-string MenuIO::input_raw()
+string MenuIO::input_default()
 {
 	string input;
 
 	getline(cin, input);
 
-	saved += input + '\n';
+	printed += input + '\n';
 
 	return input;
 }
 
-void MenuIO::ProcessCommand(char command)
+void MenuIO::ProcessCommand(char character)
 {
 	// 입력한 명령어가 목록에 있으면 명령어에 해당하는 기능 수행합니다.
-	if (HasCommand(command)) {
-		command_func_list[command]();
+	if (HasCommand(character) && CanCommand(character)) {
+		command_list[character]->command_func();
 	}
 }
 
-bool MenuIO::HasCommand(char command)
+bool MenuIO::HasCommand(char character)
 {
-	return command_func_list.find(command) != command_func_list.end();
+	return command_list.find(character) != command_list.end();
 }
 
+bool MenuIO::CanCommand(char character)
+{
+	return command_availability.contains(character);
+}
+
+void MenuIO::CleanUp()
+{
+	for (auto iter = command_list.begin(); iter != command_list.end(); ++iter) {
+		delete iter->second;
+	}
+
+	command_list.clear();
+}
 
 MenuIO::MenuIO() {}
 
-MenuIO::~MenuIO() {}
-
-void MenuIO::AppendCommandFunc(char command, function<void()> command_func)
-{
-	if (command_func != nullptr) {
-		command_func_list.insert({ command, command_func });
-	}
+MenuIO::~MenuIO() {
+	CleanUp();
 }
 
-void MenuIO::RemoveCommandFunc(char command)
+void MenuIO::AppendCommand(char character, Command* command)
 {
-	command_func_list.erase(command); 
+	if (command != nullptr) {
+		command_list.insert({ character, command });
+	}
+} 
+
+void MenuIO::RemoveCommand(char character)
+{
+	command_list.erase(character);
+
+	command_availability.erase(character);
+}
+
+void MenuIO::ToggleCommand(set<char> command_availability)
+{
+	this->command_availability = command_availability;
 }
 
 void MenuIO::freeze(function<void(function<void(void)>)> body)
 {
-	string freezed = saved;
+	set<char> availability = command_availability;
+
+	string freezed = printed;
 
 	function<void(void)> rollback = [&]()
 	{
-		saved = freezed;
+		command_availability = availability;
+
+		printed = freezed;
 		this->reprint();
 	};
 
@@ -143,9 +183,10 @@ void MenuIO::freeze(function<void(function<void(void)>)> body)
 }
 
 void MenuIO::flush()
-{
-	saved = "";
-	this->reprint();
+{  
+	printed = "";
+
+	this->clear();
 }
 
 void MenuIO::clear()
@@ -155,7 +196,7 @@ void MenuIO::clear()
 
 void MenuIO::print(string text)
 {
-	saved += text;
+	printed += text;
 
 	cout << text;
 }
@@ -164,7 +205,7 @@ void MenuIO::reprint()
 {
 	this->clear();
 
-	cout << saved;
+	cout << printed;
 }
 
 string MenuIO::input()
@@ -173,7 +214,7 @@ string MenuIO::input()
 
 	this->freeze([&](auto rollback) {
 		while (true) { 
-			input = this->input_raw();
+			input = this->input_default();
 
 			// 명령어 처리
 			if (!input.empty() && input[0] == ':') {
@@ -183,7 +224,7 @@ string MenuIO::input()
 				if (input.length() == 1) {
 					char command = tolower(input[0]);
 
-					if (HasCommand(command)) {
+					if (HasCommand(command) && CanCommand(command)) {
 						ProcessCommand(command);
 					}
 					else{
@@ -253,5 +294,29 @@ void MenuIO::pause()
 {
 	this->print("아무키나 입력하세요... \n");
 
-	this->input_raw();
+	this->input_default();
+}
+
+void MenuIO::print_line(bool bold, int length)
+{
+	for (int i = 0; i < length; i++) {
+		this->print(bold ? "=" : "-");
+	} 
+
+	this->print("\n");
+} 
+
+void MenuIO::print_available_command()
+{
+	vector<string> printed;
+
+	for (auto character = command_availability.begin(); character != command_availability.end(); character++) {
+		if (true) {
+			Command* command = command_list[*character];
+
+			printed.push_back(format("{0}[{1}]", command->name, (char)toupper(*character)));
+		}
+	}
+
+	this->print(join(printed, "     ") + '\n');
 }

@@ -50,7 +50,7 @@ string* Product::ToArray()
 
 string* Account::ToArray()
 {  
-	return &(vector<string> { name, id, password, phone_number, address, join<int>(invoice_id_list) })[0];
+	return &(vector<string> { name, id, password, phone_number, address, join(invoice_id_list) })[0];
 }
 
 string* Invoice::ToArray()
