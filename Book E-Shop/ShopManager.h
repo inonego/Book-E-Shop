@@ -19,4 +19,3 @@ public:
 	bool SignUp(Account* account);
 	bool BuyProduct(Invoice* invoice);
 };
-

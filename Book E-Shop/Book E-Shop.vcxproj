@@ -129,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DataManager.cpp" />
+    <ClCompile Include="IO.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="DataComponent.cpp" />
     <ClCompile Include="MenuManager.cpp" />
@@ -138,11 +139,16 @@
   <ItemGroup>
     <ClInclude Include="DataComponent.h" />
     <ClInclude Include="DataManager.h" />
+    <ClInclude Include="IO.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="implement.h" />
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="ShopManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

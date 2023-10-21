@@ -21,4 +21,3 @@ public:
 
 	vector<string*> ParseCSV(string path);
 };
-

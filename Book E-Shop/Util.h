@@ -6,8 +6,6 @@
 
 using namespace std;
 
-typedef function<void(void)> action;
-
 static string join(vector<int> array, string delimiter = ",") {
     string result;
 
@@ -22,7 +20,7 @@ static string join(vector<int> array, string delimiter = ",") {
     return result;
 }
 
-static string join(vector<string> array, string delimiter = ",") {
+static string join(vector<string> array, string delimiter = "") {
     string result;
 
     for (string value : array) {
