@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>  
+#include <unordered_set>
 #include <string>
 #include <functional>
 
@@ -28,8 +29,11 @@ private:
 	// 매뉴화면들의 목록입니다.
 	map<MenuCode, Menu*> menu_list;
 
+	Menu* current_menu;
+
 	// 명령어들의 목록입니다.
 	unordered_map<char, Command*> command_list;
+	unordered_set<char> command_availability;
 public:   
 	MenuManager();
 	~MenuManager();
@@ -56,6 +60,16 @@ public:
 	bool CanCommand(char character);
 	// 입력 받은 명령어를 작동시킵니다.
 	void ProcessCommand(char character);
+	// 명령어의 사용 가능 여부를 설정합니다.
+	template<typename... TP, typename = char>
+	void ToggleCommand(TP... command) {
+		command_availability = unordered_set<char>{ command... };
+	}
+
+	// 현재 사용 가능한 명령어들을 출력합니다.
+	void PrintCommand();
+
+	Menu* GetCurrentMenu();
 
 	// 실행중인 메뉴에서 벗어나 새로운 메뉴화면을 실행합니다.
 	template<typename... TP> 
@@ -64,12 +78,16 @@ public:
 	// 실행중인 메뉴에서 재귀적으로 새로운 메뉴화면을 실행합니다.
 	template<typename ...TP>
 	void RunRecursiveMenu(MenuCode menu_code, TP ...args);
-};
+
+	Menu* operator[](MenuCode menu_code);
+}; 
 
 template<typename ...TP>
 inline void MenuManager::RunMenu(MenuCode menu_code, TP ...args)
 {
-	throw menu_code;
+	vector<any> v{ args... };
+
+	throw make_pair(menu_code, v);
 }
 
 template<typename ...TP>
@@ -78,9 +96,24 @@ inline void MenuManager::RunRecursiveMenu(MenuCode menu_code, TP ...args)
 	IO::Buffer* prev_buffer = this->IO.get_buffer();
 	IO::Buffer* next_buffer = new IO::Buffer();
 
+	// 현재 상태 저장 및 다음 상태 설정
+	auto command_availability = this->command_availability;
+
+	auto current_menu = this->current_menu;
+	 
 	this->IO.set_buffer(next_buffer);
 
-	menu_list[menu_code]->Run(IO, args...);
+	ToggleCommand('z', 'l', 'q');
+
+	// 메뉴 실행
+	vector<any> v{ args... };
+
+	menu_list[menu_code]->Run(IO, v);
+
+	// 이전 상태로 복구
+	this->command_availability = command_availability;
+
+	this->current_menu = current_menu;
 
 	this->IO.set_buffer(prev_buffer);
 

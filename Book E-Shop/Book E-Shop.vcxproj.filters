@@ -74,8 +74,4 @@
       <Filter>소스 파일\메뉴 관리\헤더</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-    <None Include="ClassDiagram1.cd" />
-  </ItemGroup>
 </Project>

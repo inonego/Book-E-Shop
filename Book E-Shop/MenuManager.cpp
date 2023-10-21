@@ -1,6 +1,7 @@
 #include "MenuManager.h"
-
 #include "Util.h"
+
+#include <format>
 
 // ################### Menu Manager ################### 
 
@@ -50,20 +51,24 @@ MenuManager::~MenuManager()
 
 void MenuManager::Start(MenuCode menu_code)
 {
-	Menu* current_menu = menu_list[menu_code];
+	current_menu = menu_list[menu_code];
+
+	vector<any> v;
 
 	while (true) {
 		IO::Buffer* buffer = new IO::Buffer();
 
 		this->IO.set_buffer(buffer);
 
+		ToggleCommand('z', 'l', 'q');
+
 		try { 
-			current_menu->Run(IO);
+			current_menu->Run(IO, v);
 
 			current_menu = nullptr;
 		}
-		catch (MenuCode next_menu_code) {
-			current_menu = menu_list[next_menu_code];
+		catch (pair<MenuCode, vector<any>> menu_run) {
+			current_menu = menu_list[menu_run.first]; v = menu_run.second;
 		}
 
 		delete buffer;
@@ -98,9 +103,8 @@ bool MenuManager::HasCommand(char character)
 }
 
 bool MenuManager::CanCommand(char character)
-{
-	return true;
-	//return command_availability.contains(character);
+{ 
+	return command_availability.contains(character);
 }
 
 void MenuManager::ProcessCommand(char character)
@@ -109,4 +113,28 @@ void MenuManager::ProcessCommand(char character)
 	if (HasCommand(character) && CanCommand(character)) {
 		command_list[character]->command_func();
 	}
-} 
+}
+void MenuManager::PrintCommand()
+{
+	vector<string> printed;
+
+	for (auto character = command_availability.begin(); character != command_availability.end(); character++) {
+		if (true) {
+			Command* command = command_list[*character];
+
+			printed.push_back(format("{0}[{1}]", command->name, (char)toupper(*character)));
+		}
+	}
+
+	IO.print(join(printed, "     ") + '\n');
+}
+
+Menu* MenuManager::GetCurrentMenu()
+{
+	return current_menu;
+}
+
+Menu* MenuManager::operator[](MenuCode menu_code)
+{
+	return menu_list[menu_code];
+}

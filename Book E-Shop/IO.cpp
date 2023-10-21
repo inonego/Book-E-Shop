@@ -107,6 +107,9 @@ string MenuIO::input(string msg_info, string label)
 
 		input = IO::input();
 
+		// 입력을 받아서 검사하는 함수에 집어넣습니다.
+		// 만약 검사를 통과하면 루프를 벗어나고,
+		// 만약 검사를 통과하지 못하면 다시 입력을 받습니다.
 		if (input_func(*this, input)) {
 			break;
 		}

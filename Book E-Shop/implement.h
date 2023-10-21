@@ -6,14 +6,7 @@
 
 DataManager data_manager;
 MenuManager menu_manager;
-/*
-enum Command
-{
-	BACK = 'z',
-	LOGOUT = 'l',
-	QUIT = 'q'
-};
-*/
+
 void init() {
 
 }
@@ -44,34 +37,29 @@ void parser() {
 }
 
 void menu() { 
-	menu_manager.AppendMenu(MenuCode::START, new Menu([&](MenuIO& IO, vector<any> args) {
-		//IO.print_available_command(); 
+	menu_manager.AppendMenu(MENU_START, new Menu([&](MenuIO& IO, vector<any> args) {
+		menu_manager.ToggleCommand();
+		menu_manager.PrintCommand();
 		IO.print_line();
 		string number;
 
 		auto checkpoint = IO.checkpoint();
 
 		while (true) {
-			number = IO.input("1을 입력하세요");
+			number = IO.input("아무 숫자나 입력해보세요"); 
 
-
-			if (number == "1") {
-				menu_manager.RunMenu(MenuCode::LOGIN);
-
-				IO.pause();
-
-				IO.rollback(checkpoint);
-			}
-			else {
-				break;
-			}
+			menu_manager.RunMenu(MENU_LOGIN, stoi(number));
 		}
 	}));
 
-	menu_manager.AppendMenu(MenuCode::LOGIN, new Menu([&](MenuIO& IO, vector<any> args) {
-		//IO.print_available_command(); 
+	menu_manager.AppendMenu(MENU_LOGIN, new Menu([&](MenuIO& IO, vector<any> args) {
+		menu_manager.ToggleCommand('z', 'q');
+		menu_manager.PrintCommand();
 		IO.print_line();
 		string admin = "admin";
+
+
+		IO.print(to_string(any_cast<int>(args[0])) + "\n");
 
 		string id;
 		   
@@ -97,8 +85,9 @@ void menu() {
 		IO.pause();
 	}));
 
-	menu_manager.AppendMenu(MenuCode::QUIT, new Menu([&](MenuIO& IO, vector<any> args) {
-		//IO.print_available_command();
+	menu_manager.AppendMenu(MENU_QUIT, new Menu([&](MenuIO& IO, vector<any> args) {
+		menu_manager.ToggleCommand();
+		menu_manager.PrintCommand();
 
 		IO.print_line();
 		IO.print("프로그램을 종료하시겠습니까? (y / n)\n");
@@ -109,15 +98,16 @@ void menu() {
 		}
 	}));
 
-	menu_manager.AppendMenu(MenuCode::LOGOUT, new Menu([&](MenuIO& IO, vector<any> args) {
-		//IO.print_available_command();
+	menu_manager.AppendMenu(MENU_LOGOUT, new Menu([&](MenuIO& IO, vector<any> args) {
+		menu_manager.ToggleCommand();
+		menu_manager.PrintCommand();
 
 		IO.print_line();
 		IO.print("계정에서 로그아웃 하시겠습니까? (y / n)\n");
 		string input = IO.input();
 
 		if (input == "y") {
-			menu_manager.RunMenu(MenuCode::START);
+			menu_manager.RunMenu(MENU_START);
 		}
 	}));
 
@@ -125,5 +115,33 @@ void menu() {
 
 // 엑셀로 관리됩니다.
 void menu_value() {
-
+	menu_manager[MENU_QUIT]->set_prev_menu_code(MENU_NONE);
+	menu_manager[MENU_LOGOUT]->set_prev_menu_code(MENU_NONE);
+	menu_manager[MENU_START]->set_prev_menu_code(MENU_NONE);
+	menu_manager[MENU_LOGIN]->set_prev_menu_code(MENU_START);
+	//menu_manager[MENU_SIGNUP]->set_prev_menu_code(MENU_START);
+	/*
+	menu_manager[MENU_ADMIN]->set_prev_menu_code(MENU_START);
+	menu_manager[MENU_A_PRODUCT_LIST]->set_prev_menu_code(MENU_ADMIN);
+	menu_manager[MENU_A_PRODUCT_SEARCH]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
+	menu_manager[MENU_A_PRODUCT_REGISTER]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
+	menu_manager[MENU_A_PRODUCT_INFO]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
+	menu_manager[MENU_A_PRODUCT_INFO_M]->set_prev_menu_code(MENU_A_PRODUCT_INFO);
+	menu_manager[MENU_A_PRODUCT_INFO_R]->set_prev_menu_code(MENU_A_PRODUCT_INFO);
+	menu_manager[MENU_A_ACCOUNT_LIST]->set_prev_menu_code(MENU_ADMIN);
+	menu_manager[MENU_A_ACCOUNT_SEARCH]->set_prev_menu_code(MENU_A_ACCOUNT_LIST);
+	menu_manager[MENU_A_ACCOUNT_INFO]->set_prev_menu_code(MENU_A_ACCOUNT_LIST);
+	menu_manager[MENU_A_ACCOUNT_INFO_M]->set_prev_menu_code(MENU_A_ACCOUNT_INFO);
+	menu_manager[MENU_A_INVOICE_LIST]->set_prev_menu_code(MENU_A_ACCOUNT_INFO);
+	menu_manager[MENU_A_INVOICE_INFO]->set_prev_menu_code(MENU_A_INVOICE_LIST);
+	menu_manager[MENU_BUYER]->set_prev_menu_code(MENU_START);
+	menu_manager[MENU_B_PRODUCT_LIST]->set_prev_menu_code(MENU_BUYER);
+	menu_manager[MENU_B_PRODUCT_SEARCH]->set_prev_menu_code(MENU_B_PRODUCT_LIST);
+	menu_manager[MENU_B_PRODUCT_INFO]->set_prev_menu_code(MENU_B_PRODUCT_LIST);
+	menu_manager[MENU_B_PRODUCT_BUY]->set_prev_menu_code(MENU_B_PRODUCT_INFO);
+	menu_manager[MENU_B_ACCOUNT_INFO]->set_prev_menu_code(MENU_BUYER);
+	menu_manager[MENU_B_ACCOUNT_INFO_M]->set_prev_menu_code(MENU_B_ACCOUNT_INFO);
+	menu_manager[MENU_B_INVOICE_LIST]->set_prev_menu_code(MENU_B_ACCOUNT_INFO);
+	menu_manager[MENU_B_INVOICE_INFO]->set_prev_menu_code(MENU_B_INVOICE_LIST);
+	*/
 }
