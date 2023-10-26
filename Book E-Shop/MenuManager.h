@@ -10,7 +10,9 @@
 
 using namespace std;
 
-typedef function<void(void)> action;
+typedef function<void(void)> action; 
+
+using RunFunc = function<void(MenuIO&)>;
 
 class MenuManager
 {
@@ -27,13 +29,15 @@ public:
 	};
 private:   
 	// 매뉴화면들의 목록입니다.
-	map<MenuCode, Menu*> menu_list;
+	map<MenuCode, IMenu*> menu_list;
 
-	Menu* current_menu;
+	IMenu* current_menu;
 
 	// 명령어들의 목록입니다.
 	unordered_map<char, Command*> command_list;
 	unordered_set<char> command_availability;
+
+	IMenu* SetCurrentMenu(MenuCode menu_code);
 public:   
 	MenuManager();
 	~MenuManager();
@@ -45,7 +49,7 @@ public:
 	void Start(MenuCode menu_code);
 
 	// 메뉴화면을 목록에 추가합니다.
-	void AppendMenu(MenuCode menu_code, Menu* menu);
+	void AppendMenu(MenuCode menu_code, IMenu* menu);
 	// 메뉴화면을 목록에서 제거합니다.
 	void RemoveMenu(MenuCode menu_code);
 
@@ -69,7 +73,7 @@ public:
 	// 현재 사용 가능한 명령어들을 출력합니다.
 	void PrintCommand();
 
-	Menu* GetCurrentMenu();
+	IMenu* GetCurrentMenu();
 
 	// 실행중인 메뉴에서 벗어나 새로운 메뉴화면을 실행합니다.
 	template<typename... TP> 
@@ -79,15 +83,13 @@ public:
 	template<typename ...TP>
 	void RunRecursiveMenu(MenuCode menu_code, TP ...args);
 
-	Menu* operator[](MenuCode menu_code);
+	IMenu* operator[](MenuCode menu_code);
 }; 
 
 template<typename ...TP>
 inline void MenuManager::RunMenu(MenuCode menu_code, TP ...args)
-{
-	vector<any> v{ args... };
-
-	throw make_pair(menu_code, v);
+{ 
+	RunFunc menu_func = [&, menu_code, args...](MenuIO& IO) { SetCurrentMenu(menu_code)->Run(IO, args...); }; throw menu_func;
 }
 
 template<typename ...TP>
@@ -106,9 +108,7 @@ inline void MenuManager::RunRecursiveMenu(MenuCode menu_code, TP ...args)
 	ToggleCommand('z', 'l', 'q');
 
 	// 메뉴 실행
-	vector<any> v{ args... };
-
-	menu_list[menu_code]->Run(IO, v);
+	menu_list[menu_code]->Run(IO, args...);
 
 	// 이전 상태로 복구
 	this->command_availability = command_availability;

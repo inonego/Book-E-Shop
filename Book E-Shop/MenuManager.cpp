@@ -2,10 +2,23 @@
 #include "Util.h"
 
 #include <format>
+#include <iostream>
 
 // ################### Menu Manager ################### 
 
-MenuManager::MenuManager() 
+IMenu* MenuManager::SetCurrentMenu(MenuCode menu_code)
+{
+	if (menu_list.find(menu_code) != menu_list.end()) { 
+		return current_menu = menu_list[menu_code];
+	}
+	else {
+		cerr << "오류 : 메뉴가 존재하지 않습니다." << endl;
+
+		exit(200);
+	}
+}
+
+MenuManager::MenuManager()
 	:
 	IO(MenuIO([&](MenuIO& IO, string input) -> bool {
 		// 명령어 처리
@@ -50,11 +63,9 @@ MenuManager::~MenuManager()
 }
 
 void MenuManager::Start(MenuCode menu_code)
-{
-	current_menu = menu_list[menu_code];
-
-	vector<any> v;
-
+{ 
+	RunFunc run_func = [&, menu_code](MenuIO& IO) { SetCurrentMenu(menu_code)->Run(IO); };
+	
 	while (true) {
 		IO::Buffer* buffer = new IO::Buffer();
 
@@ -63,12 +74,12 @@ void MenuManager::Start(MenuCode menu_code)
 		ToggleCommand('z', 'l', 'q');
 
 		try { 
-			current_menu->Run(IO, v);
+			run_func(IO);
 
 			current_menu = nullptr;
 		}
-		catch (pair<MenuCode, vector<any>> menu_run) {
-			current_menu = menu_list[menu_run.first]; v = menu_run.second;
+		catch (RunFunc menu_func) { 
+			run_func = menu_func;
 		}
 
 		delete buffer;
@@ -77,7 +88,7 @@ void MenuManager::Start(MenuCode menu_code)
 	}
 }
 
-void MenuManager::AppendMenu(MenuCode menu_code, Menu* menu)
+void MenuManager::AppendMenu(MenuCode menu_code, IMenu* menu)
 {
 	menu_list.insert({ menu_code, menu });
 }
@@ -129,12 +140,12 @@ void MenuManager::PrintCommand()
 	IO.print(join(printed, "     ") + '\n');
 }
 
-Menu* MenuManager::GetCurrentMenu()
+IMenu* MenuManager::GetCurrentMenu()
 {
 	return current_menu;
 }
 
-Menu* MenuManager::operator[](MenuCode menu_code)
+IMenu* MenuManager::operator[](MenuCode menu_code)
 {
 	return menu_list[menu_code];
 }

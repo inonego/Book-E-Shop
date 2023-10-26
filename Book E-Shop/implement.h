@@ -3,7 +3,7 @@
 #include <regex>
 #include <format>
 #include <vector>
-#include "ShopManager.h"
+#include "ShopManager.h" 
 
 DataManager data_manager;
 MenuManager menu_manager;
@@ -59,10 +59,10 @@ void parser() {
 		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다")
 	);
 	//csv 파싱
-	vector<string> product_raw = data_manager.ParseCSV("C:/Users/ILISNN/Documents/products.csv");
+	auto product_raw = data_manager.ParseCSV("products.csv");
 	for (size_t i = 0; i < product_raw.size();i++) {
 		// 생성된 Product 객체를 shop_manager에 추가
-		shop_manager.Add_Product(new Product(product_raw[i]));
+		shop_manager.AddProduct(new Product(product_raw[i]));
 	}
 
 
@@ -79,38 +79,38 @@ void parser() {
 template <typename... TP, typename = pair<MenuCode, string>>
 void MenuSelectionTemplate(MenuCode menu_code, TP... info) {
 	
-	menu_manager.AppendMenu(menu_code, new Menu([&, info...](MenuIO& IO, vector<any> args) {
-		menu_manager.PrintCommand();
-		IO.print_line();
+	menu_manager.AppendMenu(menu_code, new Menu(
+		[&, info...](MenuIO& IO) {
+			menu_manager.PrintCommand();
+			IO.print_line();
 
-		vector<pair<MenuCode, string>> v{ info... };
+			vector<pair<MenuCode, string>> v{ info... };
 
-		for (int i = 0; i < v.size(); i++) {
-			IO.print(format("({0}) {1}\n", i + 1, v[i].second));
-		}
-
-		IO.print_line();
-
-		int index;
-
-		auto checkpoint = IO.checkpoint();
-
-		Product* product = shop_manager.Get_Prodcut_list().find(123456)->second;
-
-		while (true) {
-			index = any_cast<int>(IO.input(data_manager.GetParser("MENU_SELECT")));
-
-			if (1 <= index && index <= v.size()) {
-				menu_manager.RunMenu(v[index - 1].first);
+			for (int i = 0; i < v.size(); i++) {
+				IO.print(format("({0}) {1}\n", i + 1, v[i].second));
 			}
-			else {
-				IO.print("메뉴에 표시된 번호 중 하나를 고르세요.\n");
-				IO.pause();
 
-				IO.rollback(checkpoint);
+			IO.print_line();
+
+			int index;
+
+			auto checkpoint = IO.checkpoint();
+			
+			while (true) {
+				index = any_cast<int>(IO.input(data_manager.GetParser("MENU_SELECT")));
+
+				if (1 <= index && index <= v.size()) {
+					menu_manager.RunMenu(v[index - 1].first);
+				}
+				else {
+					IO.print("메뉴에 표시된 번호 중 하나를 고르세요.\n");
+					IO.pause();
+
+					IO.rollback(checkpoint);
+				}
 			}
 		}
-	}));
+	));
 }
 
 void menu() {
@@ -118,89 +118,96 @@ void menu() {
 	MenuSelectionTemplate(MENU_ADMIN, make_pair(MENU_A_PRODUCT_LIST, "상품 관리 (등록/수정/제거, 재고관리)"), make_pair(MENU_A_ACCOUNT_LIST, "고객 관리 (계정, 주문)"));
 	MenuSelectionTemplate(MENU_BUYER, make_pair(MENU_B_PRODUCT_LIST, "상품 목록"), make_pair(MENU_B_ACCOUNT_INFO, "고객 계정 정보"));
 
-	menu_manager.AppendMenu(MENU_LOGIN, new Menu([&](MenuIO& IO, vector<any> args) {
-		menu_manager.ToggleCommand('z', 'q');
-		menu_manager.PrintCommand();
-		IO.print_line();
-		string admin = "admin";
+	// 계정 로그인 메뉴화면
+	menu_manager.AppendMenu(MENU_LOGIN, new Menu(
+		[&](MenuIO& IO) {
+			//test
+			menu_manager.RunMenu(MENU_A_PRODUCT_INFO, shop_manager.GetProdcutList()[123123]);
 
+			menu_manager.ToggleCommand('z', 'q');
+			menu_manager.PrintCommand();
+			IO.print_line();
+			string admin = "admin";
 
-		//IO.print(to_string(any_cast<int>(args[0])) + "\n");
-
-		string id;
+			string id;
 		   
-		auto checkpoint = IO.checkpoint();
+			auto checkpoint = IO.checkpoint();
 
-		while (true) {
-			id = any_cast<string>(IO.input(data_manager.GetParser("account_id")));
+			while (true) {
+				id = any_cast<string>(IO.input(data_manager.GetParser("account_id")));
 
-			if (id == admin) {
-				IO.print("관리자 아이디 ‘admin’은 아이디로 사용할 수 없습니다.\n");
-				IO.pause();
+				if (id == admin) {
+					IO.print("관리자 아이디 ‘admin’은 아이디로 사용할 수 없습니다.\n");
+					IO.pause();
 
-				IO.rollback(checkpoint);
+					IO.rollback(checkpoint);
+				}
+				else {
+					break;
+				}
 			}
-			else {
-				break;
+
+			string password = any_cast<string>(IO.input(data_manager.GetParser("account_password")));
+
+			IO.print(format("입력하신 아이디는 {0}, 비밀번호는 {1}입니다.\n", id, password));
+			IO.pause();
+		}
+	));
+
+	// 프로그램 종료 메뉴화면
+	menu_manager.AppendMenu(MENU_QUIT, new Menu(
+		[&](MenuIO& IO) {
+			menu_manager.ToggleCommand();
+			menu_manager.PrintCommand();
+
+			IO.print_line();
+			IO.print("프로그램을 종료하시겠습니까? (y / n)\n");
+			string input = IO.input();
+
+			if (input == "y") {
+				exit();
 			}
 		}
+	));
+	
+	// 계정 로그아웃 메뉴화면
+	menu_manager.AppendMenu(MENU_LOGOUT, new Menu(
+		[&](MenuIO& IO) {
+			menu_manager.ToggleCommand();
+			menu_manager.PrintCommand();
 
-		string password = any_cast<string>(IO.input(data_manager.GetParser("account_password")));
+			IO.print_line();
+			IO.print("계정에서 로그아웃 하시겠습니까? (y / n)\n");
+			string input = IO.input();
 
-		IO.print(format("입력하신 아이디는 {0}, 비밀번호는 {1}입니다.\n", id, password));
-		IO.pause();
-	}));
-
-	menu_manager.AppendMenu(MENU_QUIT, new Menu([&](MenuIO& IO, vector<any> args) {
-		menu_manager.ToggleCommand();
-		menu_manager.PrintCommand();
-
-		IO.print_line();
-		IO.print("프로그램을 종료하시겠습니까? (y / n)\n");
-		string input = IO.input();
-
-		if (input == "y") {
-			exit();
+			if (input == "y") {
+				menu_manager.RunMenu(MENU_START);
+			}
 		}
-	}));
+	));
 
-	menu_manager.AppendMenu(MENU_LOGOUT, new Menu([&](MenuIO& IO, vector<any> args) {
+	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO, new Menu<Product*>(
+		[&](MenuIO& IO, Product* target) {
+			//all command allowed
+			menu_manager.PrintCommand();
+
+			IO.print_line();
+			IO.print("[상품등록정보]\n"); 
 		
-		menu_manager.ToggleCommand();
-		menu_manager.PrintCommand();
+			IO.print(format("고유번호 : {0}\n", target->id));
+			IO.print(format("제목 : {0}\n", target->title));
+			IO.print(format("장르 : {0}\n", target->genre));
+			IO.print(format("가격 : {0}\n", target->price));
+			IO.print(format("재고 : {0}\n", target->count));
+		 
+			IO.print("계정에서 로그아웃 하시겠습니까? (y / n)\n");
+			string input = IO.input();
 
-		IO.print_line();
-		IO.print("계정에서 로그아웃 하시겠습니까? (y / n)\n");
-		string input = IO.input();
-
-		if (input == "y") {
-			menu_manager.RunMenu(MENU_START);
+			if (input == "y") {
+				menu_manager.RunMenu(MENU_START);
+			}
 		}
-	}));
-
-	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO, new Menu([&](MenuIO& IO, vector<any> args) {
-
-		//all command allowed
-		menu_manager.PrintCommand();
-
-		IO.print_line();
-		IO.print("[상품등록정보]\n");
-
-		Product* targetP = any_cast<Product*>(args[0]);
-		
-		IO.print("고유번호 : "); IO.print(to_string(any_cast<int>(targetP->id))); IO.print("\n");
-		IO.print("제목 : "); IO.print(any_cast<string>(targetP->title)); IO.print("\n");
-		IO.print("장르 : "); IO.print(any_cast<string>(targetP->genre)); IO.print("\n");
-		IO.print("가격 : "); IO.print(to_string(any_cast<int>(targetP->price))); IO.print("\n");
-		IO.print("재고 : "); IO.print(to_string(any_cast<int>(targetP->count))); IO.print("\n");
-
-		IO.print("계정에서 로그아웃 하시겠습니까? (y / n)\n");
-		string input = IO.input();
-
-		if (input == "y") {
-			menu_manager.RunMenu(MENU_START);
-		}
-		}));
+	));
 
 		
 }

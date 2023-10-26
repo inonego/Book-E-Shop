@@ -27,18 +27,8 @@ public:
 class Product : DataComponent {
 public:
 	Product();
-	Product(string datas)
-	{
-		//cout << datas << endl;
-		istringstream ss(datas);
-		string buf;
-		vector<string> data;
-
-		while (getline(ss, buf, ',')) {
-			data.push_back(buf);
-			//cout << buf << endl;
-		}
-		
+	Product(vector<string> data)
+	{		
 		id = stoi(data[0]);
 		title = data[1];
 		genre = data[2];

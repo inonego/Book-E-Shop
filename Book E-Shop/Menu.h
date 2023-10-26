@@ -1,6 +1,5 @@
 #pragma once
 
-#include <any> 
 #include <string>
 #include <functional>
 
@@ -35,31 +34,47 @@ enum MenuCode {
 	MENU_B_INVOICE_INFO
 };
 
-using namespace std;
+using namespace std;   
 
-class Menu
-{
+class IMenu {
 private:
 	string name;
 
 	MenuCode prev_menu_code;
-
-	function<void(MenuIO&, vector<any>)> run_func;
-public:
-	Menu(function<void(MenuIO&, vector<any>)> run_func) : run_func(run_func) {}
-	
+public: 
 	// 이전 메뉴의 코드를 반환합니다.
 	MenuCode get_prev_menu_code() {
 		return prev_menu_code;
 	}
-	  
+
 	// 이전 메뉴의 코드를 설정합니다.
 	void set_prev_menu_code(MenuCode prev_menu_code) {
 		this->prev_menu_code = prev_menu_code;
 	}
 
 	template<typename... TP>
-	void Run(MenuIO& IO, vector<any> v) { 
-		run_func(IO, v);
-	}
-}; 
+	void Run(MenuIO& IO, TP... v);
+};
+
+
+template <typename... TP>
+class Menu : public IMenu
+{
+private:
+	friend class IMenu;
+
+	function<void(MenuIO&, TP...)> run_func;
+public:
+	template <typename T> requires invocable<T, MenuIO&, TP...>
+	Menu(T run_func) : run_func(run_func) {} 
+};
+
+template<typename ...TP>
+inline void IMenu::Run(MenuIO& IO, TP ...v)
+{
+	using Menu = Menu<TP...>;
+
+	Menu* menu = static_cast<Menu*>(this);
+	 
+	menu->run_func(IO, v...);
+}
