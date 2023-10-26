@@ -19,5 +19,5 @@ public:
 
 	Parser* GetParser(string parser_name);
 
-	vector<string*> ParseCSV(string path);
+	vector<string> ParseCSV(string path);
 };

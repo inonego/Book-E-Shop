@@ -3,9 +3,11 @@
 #include <regex>
 #include <format>
 #include <vector>
+#include "ShopManager.h"
 
 DataManager data_manager;
 MenuManager menu_manager;
+ShopManager shop_manager;
 
 void init() {
 
@@ -34,6 +36,38 @@ void parser() {
 		->set_label("나이")
 		->set_msg_info("나이를 입력하세요!")
 	);
+#pragma region *** product Parser ***
+	data_manager.AppendParser("product_id", (new Parser())
+		->set_label("고유번호")
+		->set_regex(R"(^[0-9]{6}$)")
+		->set_msg_error("숫자로 구성된 길이가 6인 문자열이어야 합니다")
+	);
+	data_manager.AppendParser("product_title", (new Parser())
+		->set_label("제목")
+	);
+	data_manager.AppendParser("product_genre", (new Parser())
+		->set_label("장르")
+	);
+	data_manager.AppendParser("product_price", (new Parser())
+		->set_label("가격")
+		->set_regex(R"(^[0-9]+$)")
+		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다")
+	);
+	data_manager.AppendParser("product_count", (new Parser())
+		->set_label("재고")
+		->set_regex(R"(^[0-9]+$)")
+		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다")
+	);
+	//csv 파싱
+	vector<string> product_raw = data_manager.ParseCSV("C:/Users/ILISNN/Documents/products.csv");
+	for (size_t i = 0; i < product_raw.size();i++) {
+		// 생성된 Product 객체를 shop_manager에 추가
+		shop_manager.Add_Product(new Product(product_raw[i]));
+	}
+
+
+#pragma endregion
+
 
 	data_manager.AppendParser("MENU_SELECT", (new Parser())
 		->set_regex(R"(\d)")
@@ -60,6 +94,8 @@ void MenuSelectionTemplate(MenuCode menu_code, TP... info) {
 		int index;
 
 		auto checkpoint = IO.checkpoint();
+
+		Product* product = shop_manager.Get_Prodcut_list().find(123456)->second;
 
 		while (true) {
 			index = any_cast<int>(IO.input(data_manager.GetParser("MENU_SELECT")));
@@ -129,6 +165,7 @@ void menu() {
 	}));
 
 	menu_manager.AppendMenu(MENU_LOGOUT, new Menu([&](MenuIO& IO, vector<any> args) {
+		
 		menu_manager.ToggleCommand();
 		menu_manager.PrintCommand();
 
@@ -141,6 +178,31 @@ void menu() {
 		}
 	}));
 
+	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO, new Menu([&](MenuIO& IO, vector<any> args) {
+
+		//all command allowed
+		menu_manager.PrintCommand();
+
+		IO.print_line();
+		IO.print("[상품등록정보]\n");
+
+		Product* targetP = any_cast<Product*>(args[0]);
+		
+		IO.print("고유번호 : "); IO.print(to_string(any_cast<int>(targetP->id))); IO.print("\n");
+		IO.print("제목 : "); IO.print(any_cast<string>(targetP->title)); IO.print("\n");
+		IO.print("장르 : "); IO.print(any_cast<string>(targetP->genre)); IO.print("\n");
+		IO.print("가격 : "); IO.print(to_string(any_cast<int>(targetP->price))); IO.print("\n");
+		IO.print("재고 : "); IO.print(to_string(any_cast<int>(targetP->count))); IO.print("\n");
+
+		IO.print("계정에서 로그아웃 하시겠습니까? (y / n)\n");
+		string input = IO.input();
+
+		if (input == "y") {
+			menu_manager.RunMenu(MENU_START);
+		}
+		}));
+
+		
 }
 
 // 엑셀로 관리됩니다.
@@ -149,13 +211,16 @@ void menu_value() {
 	menu_manager[MENU_LOGOUT]->set_prev_menu_code(MENU_NONE);
 	menu_manager[MENU_START]->set_prev_menu_code(MENU_NONE);
 	menu_manager[MENU_LOGIN]->set_prev_menu_code(MENU_START);
+
+	menu_manager[MENU_A_PRODUCT_INFO]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
+
 	//menu_manager[MENU_SIGNUP]->set_prev_menu_code(MENU_START);
 	/*
 	menu_manager[MENU_ADMIN]->set_prev_menu_code(MENU_START);
 	menu_manager[MENU_A_PRODUCT_LIST]->set_prev_menu_code(MENU_ADMIN);
 	menu_manager[MENU_A_PRODUCT_SEARCH]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
 	menu_manager[MENU_A_PRODUCT_REGISTER]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
-	menu_manager[MENU_A_PRODUCT_INFO]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
+	
 	menu_manager[MENU_A_PRODUCT_INFO_M]->set_prev_menu_code(MENU_A_PRODUCT_INFO);
 	menu_manager[MENU_A_PRODUCT_INFO_R]->set_prev_menu_code(MENU_A_PRODUCT_INFO);
 	menu_manager[MENU_A_ACCOUNT_LIST]->set_prev_menu_code(MENU_ADMIN);
