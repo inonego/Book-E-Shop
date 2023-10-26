@@ -1,7 +1,11 @@
 #pragma once
 
+#include<any>
 #include <string> 
 #include <vector> 
+
+#include <iostream>
+#include <sstream>
 
 using namespace std;
  
@@ -23,7 +27,24 @@ public:
 class Product : DataComponent {
 public:
 	Product();
-	Product(string* data);
+	Product(string datas)
+	{
+		//cout << datas << endl;
+		istringstream ss(datas);
+		string buf;
+		vector<string> data;
+
+		while (getline(ss, buf, ',')) {
+			data.push_back(buf);
+			//cout << buf << endl;
+		}
+		
+		id = stoi(data[0]);
+		title = data[1];
+		genre = data[2];
+		price = stoi(data[3]);
+		count = stoi(data[4]);
+	};
 
 	int id;
 	string title;
@@ -34,6 +55,8 @@ public:
 	virtual string GetKey() override;
 	virtual string* ToArray() override;
 };
+
+
 
 // 고객 계정 정보
 class Account : DataComponent {

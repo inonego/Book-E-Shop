@@ -9,11 +9,6 @@ DataComponent::DataComponent(string* data) {}
 
 Product::Product() {}
 
-Product::Product(string* data)
-{
-
-}
-
 string Product::GetKey()
 {
 	return to_string(id);
@@ -21,10 +16,12 @@ string Product::GetKey()
 
 Account::Account() {}
 
+
 Account::Account(string* data)
 {
 
 }
+
 
 string Account::GetKey()
 {
