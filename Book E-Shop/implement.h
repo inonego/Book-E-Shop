@@ -34,23 +34,53 @@ void parser() {
 		->set_label("나이")
 		->set_msg_info("나이를 입력하세요!")
 	);
+
+	data_manager.AppendParser("MENU_SELECT", (new Parser())
+		->set_regex(R"(\d)")
+		->set_msg_error("메뉴에 표시된 번호 중 하나를 고르세요.")
+		->set_parse([&](string input) -> any { return stoi(input); })
+	);
 }
 
-void menu() { 
-	menu_manager.AppendMenu(MENU_START, new Menu([&](MenuIO& IO, vector<any> args) {
-		menu_manager.ToggleCommand();
+template <typename... TP, typename = pair<MenuCode, string>>
+void MenuSelectionTemplate(MenuCode menu_code, TP... info) {
+	
+	menu_manager.AppendMenu(menu_code, new Menu([&, info...](MenuIO& IO, vector<any> args) {
 		menu_manager.PrintCommand();
 		IO.print_line();
-		string number;
+
+		vector<pair<MenuCode, string>> v{ info... };
+
+		for (int i = 0; i < v.size(); i++) {
+			IO.print(format("({0}) {1}\n", i + 1, v[i].second));
+		}
+
+		IO.print_line();
+
+		int index;
 
 		auto checkpoint = IO.checkpoint();
 
 		while (true) {
-			number = IO.input("아무 숫자나 입력해보세요"); 
+			index = any_cast<int>(IO.input(data_manager.GetParser("MENU_SELECT")));
 
-			menu_manager.RunMenu(MENU_LOGIN, stoi(number));
+			if (1 <= index && index <= v.size()) {
+				menu_manager.RunMenu(v[index - 1].first);
+			}
+			else {
+				IO.print("메뉴에 표시된 번호 중 하나를 고르세요.\n");
+				IO.pause();
+
+				IO.rollback(checkpoint);
+			}
 		}
 	}));
+}
+
+void menu() {
+	MenuSelectionTemplate(MENU_START, make_pair(MENU_LOGIN, "계정 로그인"), make_pair(MENU_SIGNUP, "계정 회원가입"));
+	MenuSelectionTemplate(MENU_ADMIN, make_pair(MENU_A_PRODUCT_LIST, "상품 관리 (등록/수정/제거, 재고관리)"), make_pair(MENU_A_ACCOUNT_LIST, "고객 관리 (계정, 주문)"));
+	MenuSelectionTemplate(MENU_BUYER, make_pair(MENU_B_PRODUCT_LIST, "상품 목록"), make_pair(MENU_B_ACCOUNT_INFO, "고객 계정 정보"));
 
 	menu_manager.AppendMenu(MENU_LOGIN, new Menu([&](MenuIO& IO, vector<any> args) {
 		menu_manager.ToggleCommand('z', 'q');
@@ -59,7 +89,7 @@ void menu() {
 		string admin = "admin";
 
 
-		IO.print(to_string(any_cast<int>(args[0])) + "\n");
+		//IO.print(to_string(any_cast<int>(args[0])) + "\n");
 
 		string id;
 		   

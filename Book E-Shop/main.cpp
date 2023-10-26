@@ -30,5 +30,5 @@ int main()
 
 	menu_value();
 	
-	menu_manager.Start(MENU_START);
+	menu_manager.Start(MENU_BUYER);
 }
