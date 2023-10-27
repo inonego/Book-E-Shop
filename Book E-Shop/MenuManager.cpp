@@ -12,7 +12,7 @@ IMenu* MenuManager::SetCurrentMenu(MenuCode menu_code)
 		return current_menu = menu_list[menu_code];
 	}
 	else {
-		cerr << "오류 : 메뉴가 존재하지 않습니다." << endl;
+		cerr << "오류 : 메뉴가 존재하지 않습니다." << '\n';
 
 		exit(200);
 	}

@@ -134,6 +134,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="DataComponent.cpp" />
     <ClCompile Include="MenuManager.cpp" />
+    <ClCompile Include="program.cpp" />
     <ClCompile Include="ShopManager.cpp" />
     <ClCompile Include="Util.h" />
   </ItemGroup>
@@ -142,9 +143,9 @@
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="IO.h" />
     <ClInclude Include="Menu.h" />
-    <ClInclude Include="implement.h" />
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="program.h" />
     <ClInclude Include="ShopManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

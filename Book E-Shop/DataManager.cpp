@@ -30,7 +30,7 @@ vector<vector<string>> DataManager::ParseCSV(string path)
     fstream stream(path, ios::in);
 
     if (stream.fail()) { 
-        cerr << "오류 : CSV 파일을 찾을 수 없습니다" << endl;
+        cerr << "오류 : CSV 파일을 찾을 수 없습니다" << '\n';
         
         exit(100);
     }

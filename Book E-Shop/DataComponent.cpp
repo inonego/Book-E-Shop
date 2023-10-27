@@ -2,12 +2,20 @@
 
 #include "Util.h"
 
-
 DataComponent::DataComponent() {}
 
 DataComponent::DataComponent(string* data) {}
 
 Product::Product() {}
+
+Product::Product(vector<string> data)
+{
+	id = stoi(data[0]);
+	title = data[1];
+	genre = data[2];
+	price = stoi(data[3]);
+	count = stoi(data[4]);
+};
 
 string Product::GetKey()
 {
@@ -16,8 +24,9 @@ string Product::GetKey()
 
 Account::Account() {}
 
+Account::Account(string id, string password) : id(id), password(password) {}
 
-Account::Account(string* data)
+Account::Account(vector<string> data)
 {
 
 }
@@ -30,7 +39,7 @@ string Account::GetKey()
 
 Invoice::Invoice() {}
 
-Invoice::Invoice(string* data)
+Invoice::Invoice(vector<string> data)
 {
 
 }

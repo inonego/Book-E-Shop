@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 #include <functional>
 
 enum MenuCode {
@@ -40,7 +41,7 @@ class IMenu {
 private:
 	string name;
 
-	MenuCode prev_menu_code;
+	MenuCode prev_menu_code = MENU_NONE;
 public: 
 	// 이전 메뉴의 코드를 반환합니다.
 	MenuCode get_prev_menu_code() {
@@ -49,6 +50,8 @@ public:
 
 	// 이전 메뉴의 코드를 설정합니다.
 	void set_prev_menu_code(MenuCode prev_menu_code) {
+		if (this == nullptr) return;
+
 		this->prev_menu_code = prev_menu_code;
 	}
 
@@ -76,5 +79,11 @@ inline void IMenu::Run(MenuIO& IO, TP ...v)
 
 	Menu* menu = static_cast<Menu*>(this);
 	 
+	if (menu == nullptr) {
+		cerr << "오류 : 메뉴의 인자 형식이 올바르지 않습니다." << '\n';
+
+		exit(300);
+	}
+
 	menu->run_func(IO, v...);
 }

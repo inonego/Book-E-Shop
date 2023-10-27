@@ -27,14 +27,7 @@ public:
 class Product : DataComponent {
 public:
 	Product();
-	Product(vector<string> data)
-	{		
-		id = stoi(data[0]);
-		title = data[1];
-		genre = data[2];
-		price = stoi(data[3]);
-		count = stoi(data[4]);
-	};
+	Product(vector<string> data);
 
 	int id;
 	string title;
@@ -52,7 +45,8 @@ public:
 class Account : DataComponent {
 public:	
 	Account();
-	Account(string* data);
+	Account(string id, string password);
+	Account(vector<string> data);
 
 	string name;
 	string id;
@@ -69,7 +63,7 @@ public:
 class Invoice : DataComponent {
 public:	
 	Invoice();
-	Invoice(string* data);
+	Invoice(vector<string> data);
 
 	int id;
 	string buyer_id;
