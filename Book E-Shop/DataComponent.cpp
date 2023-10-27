@@ -28,7 +28,13 @@ Account::Account(string id, string password) : id(id), password(password) {}
 
 Account::Account(vector<string> data)
 {
-
+	name = data[0];
+	id = data[1];
+	password = data[2];
+	phone_number = data[3];
+	address = data[4];
+	for (size_t i = 0; i < data.size() - 5; i++)
+		invoice_id_list.push_back(stoi(data[i+5]));
 }
 
 
@@ -41,7 +47,13 @@ Invoice::Invoice() {}
 
 Invoice::Invoice(vector<string> data)
 {
-
+	id = stoi(data[0]);
+	buyer_id = data[1];
+	recipient_phone_number = data[2];
+	recipient_address = data[3];
+	date = data[4];
+	product_id = stoi(data[5]);
+	product_count = stoi(data[6]);
 }
 
 string Invoice::GetKey()

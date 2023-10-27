@@ -28,4 +28,10 @@ public:
 	void AddInvoice(Invoice* invoice) { invoice_list.insert({ invoice->id, invoice }); }
 
 	map<int, Product*> GetProdcutList() { return product_list; }
+	map<string, Account*> GetAccountList() { return account_list; }
+	map<int, Invoice*> GetInvoiceList() { return invoice_list; }
+
+	Product* FindProduct(int id) { return product_list.find(id)->second; }
+	Account* FindAccount(string id) { return account_list.find(id)->second; }
+	Invoice* FindInvoice(int id) { return invoice_list.find(id)->second; }
 };
