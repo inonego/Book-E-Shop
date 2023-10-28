@@ -66,12 +66,27 @@ string* Product::ToArray()
 	return &(vector<string> {to_string(id), title, genre, to_string(price), to_string(count) })[0];
 }
 
+bool Product::operator==(const int& other) const
+{
+	return this->id == other;
+}
+
 string* Account::ToArray()
 {  
 	return &(vector<string> { name, id, password, phone_number, address, join(invoice_id_list) })[0];
 }
 
+bool Account::operator==(const string& other) const
+{
+	return this->id == other;
+}
+
 string* Invoice::ToArray()
 {  
 	return &(vector<string> { to_string(id), buyer_id, recipient_phone_number, recipient_address, date, to_string(product_id), to_string(product_count) })[0];
+}
+
+bool Invoice::operator==(const int& other) const
+{
+	return this->id == other;
 }

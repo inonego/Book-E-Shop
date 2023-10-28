@@ -47,9 +47,6 @@
     <ClCompile Include="IO.cpp">
       <Filter>소스 파일\메뉴 관리</Filter>
     </ClCompile>
-    <ClCompile Include="program.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataManager.h">
@@ -70,11 +67,11 @@
     <ClInclude Include="ShopManager.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
+    <ClInclude Include="implement.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
     <ClInclude Include="IO.h">
       <Filter>소스 파일\메뉴 관리\헤더</Filter>
-    </ClInclude>
-    <ClInclude Include="program.h">
-      <Filter>소스 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

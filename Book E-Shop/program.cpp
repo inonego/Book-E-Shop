@@ -1,18 +1,20 @@
 #include "program.h"
+#include "Util.h"
 
 #include <format>
 
-Program::Program()
+DataManager Program::data_manager;
+MenuManager Program::menu_manager;
+ShopManager Program::shop_manager;
+
+void Program::Run()
 {
 	LoadCSV();
 	SetCommand();
 	SetParser();
 	SetMenu();
 	SetPrevMenuCode();
-}
 
-void Program::Run()
-{
 	menu_manager.Start(MENU_START);
 }
 
@@ -101,7 +103,7 @@ void Program::SetParser()
 	data_manager.AppendParser("product_id", (new Parser())
 		->set_label("고유번호")
 		->set_regex(R"(^[0-9]{6}$)")
-		->set_msg_error("숫자로 구성된 길이가 6인 문자열이어야 합니다")
+		->set_msg_error("숫자로 구성된 길이가 6인 문자열이어야 합니다.")
 	);
 	data_manager.AppendParser("product_title", (new Parser())
 		->set_label("제목")
@@ -112,12 +114,12 @@ void Program::SetParser()
 	data_manager.AppendParser("product_price", (new Parser())
 		->set_label("가격")
 		->set_regex(R"(^[0-9]+$)")
-		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다")
+		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다.")
 	);
 	data_manager.AppendParser("product_count", (new Parser())
 		->set_label("재고")
 		->set_regex(R"(^[0-9]+$)")
-		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다")
+		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다.")
 	);
 #pragma endregion
 
@@ -154,10 +156,18 @@ void Program::SetParser()
 		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다")
 	);
 #pragma endregion
-	data_manager.AppendParser("MENU_SELECT", (new Parser())
+
+
+	data_manager.AppendParser("MENU_MENUSELECTION", (new Parser())
 		->set_regex(R"(\d)")
 		->set_msg_error("메뉴에 표시된 번호 중 하나를 고르세요.")
 		->set_parse([&](string input) -> any { return stoi(input); })
+	);
+
+	data_manager.AppendParser("MENU_TABLE", (new Parser())
+		->set_regex(R"(^[0-9a-zA-Z]$)")
+		->set_msg_error("메뉴에 표시된 번호 또는 알파벳 중 하나를 고르세요.")
+		->set_parse([&](string input) -> any { return input[0]; })
 	);
 }
 #pragma endregion
@@ -199,7 +209,12 @@ void Program::SetMenu()
 {	
 #pragma region 시작 메뉴화면
 	// 시작 메뉴화면
-	TemplateMenuSelection(MENU_START, make_pair(MENU_LOGIN, "계정 로그인"), make_pair(MENU_SIGNUP, "계정 회원가입"));
+	{
+		TemplateMenuSelection _template;
+		_template.SubMenu("계정 로그인",   []() { menu_manager.RunMenu(MENU_LOGIN);  });	
+		_template.SubMenu("계정 회원가입", []() { menu_manager.RunMenu(MENU_SIGNUP); });
+		_template.Apply(MENU_START);
+	}
 
 	//테스트용
 	menu_manager.AppendMenu(MENU_START, new Menu(
@@ -212,7 +227,7 @@ void Program::SetMenu()
 
 	// 계정 로그인 메뉴화면
 	menu_manager.AppendMenu(MENU_LOGIN, new Menu(
-		[&](MenuIO& IO) {
+		[&](MenuIO& IO) { 
 			menu_manager.ToggleCommand('z', 'q');
 			menu_manager.PrintCommand();
 			IO.print_line();
@@ -264,14 +279,34 @@ void Program::SetMenu()
 
 #pragma region 관리자 메뉴화면
 	// 관리자 메뉴화면
-	TemplateMenuSelection(MENU_ADMIN, make_pair(MENU_A_PRODUCT_LIST, "상품 관리 (등록/수정/제거, 재고관리)"), make_pair(MENU_A_ACCOUNT_LIST, "고객 관리 (계정, 주문)"));
-	
+	{
+		TemplateMenuSelection _template;
+		_template.SubMenu("상품 관리 (등록/수정/제거, 재고관리)", []() { menu_manager.RunMenu(MENU_A_PRODUCT_LIST, shop_manager.GetProdcutList()); });
+		_template.SubMenu("고객 관리 (계정, 주문)",				  []() { menu_manager.RunMenu(MENU_A_ACCOUNT_LIST, shop_manager.GetAccountList()); });
+		_template.Apply(MENU_ADMIN);
+	}
+
 	#pragma region 상품 목록
 	// 상품 목록 메뉴화면
+	{
+		TemplateTable<Product*> _template;
+		_template.header_func = []() -> string {
+			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", "ID", "상품", "장르", "가격", "재고");
+		};
+		_template.show_func = [](Product* product) -> string {
+			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", product->id, limit(product->title, 18), product->genre, product->price, product->count);
+		};
+		_template.SubMenu('p', MENU_A_PRODUCT_SEARCH, "상품 검색 및 장르 선택");
+		_template.SubMenu('r', MENU_A_PRODUCT_REGISTER, "상품 신규 등록");
+
+		_template.Apply(MENU_A_PRODUCT_LIST);
+	} 
+
 	menu_manager.AppendMenu(MENU_A_PRODUCT_LIST, new Menu(
 		[&](MenuIO& IO) {
 			menu_manager.PrintCommand();
 			IO.print_line();
+			
 
 		}
 	));
@@ -584,7 +619,13 @@ void Program::SetMenu()
 
 		}
 	));
+	{
+		TemplateMenuSelection _template;
 
+		_template.SubMenu("상품 관리 (등록/수정/제거, 재고관리)", []() { MENU_B_PRODUCT_LIST, shop_manager.GetProdcutList(); });
+		_template.SubMenu("고객 계정 정보",						  []() { menu_manager.RunMenu(MENU_B_ACCOUNT_INFO); }); 
+		_template.Apply(MENU_BUYER);
+	}
 #pragma endregion
 }
 #pragma endregion

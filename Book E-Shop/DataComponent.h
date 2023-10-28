@@ -20,7 +20,7 @@ public:
 	virtual string GetKey() = 0;
 
 	// 데이터 요소를 배열로 변환합니다.
-	virtual string* ToArray() = 0;
+	virtual string* ToArray() = 0; 
 };
 
 // 상품 등록 정보
@@ -37,6 +37,8 @@ public:
 
 	virtual string GetKey() override;
 	virtual string* ToArray() override;
+
+	bool operator==(const int& other) const;
 };
 
 
@@ -56,7 +58,9 @@ public:
 	vector<int> invoice_id_list;
 
 	virtual string GetKey() override; 
-	virtual string* ToArray() override;
+	virtual string* ToArray() override; 
+
+	bool operator==(const string& other) const;
 };
 
 // 주문 처리 정보
@@ -75,4 +79,6 @@ public:
 
 	virtual string GetKey() override; 
 	virtual string* ToArray() override;
+
+	bool operator==(const int& other) const;
 };

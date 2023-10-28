@@ -73,8 +73,6 @@
     <ClInclude Include="IO.h">
       <Filter>소스 파일\메뉴 관리\헤더</Filter>
     </ClInclude>
-    <ClInclude Include="program.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
+    <ClInclude Include="program.h" />
   </ItemGroup>
 </Project>
