@@ -1,7 +1,11 @@
 #pragma once
 
+#include<any>
 #include <string> 
 #include <vector> 
+
+#include <iostream>
+#include <sstream>
 
 using namespace std;
  
@@ -23,7 +27,7 @@ public:
 class Product : DataComponent {
 public:
 	Product();
-	Product(string* data);
+	Product(vector<string> data);
 
 	int id;
 	string title;
@@ -35,11 +39,14 @@ public:
 	virtual string* ToArray() override;
 };
 
+
+
 // 고객 계정 정보
 class Account : DataComponent {
 public:	
 	Account();
-	Account(string* data);
+	Account(string id, string password);
+	Account(vector<string> data);
 
 	string name;
 	string id;
@@ -56,7 +63,7 @@ public:
 class Invoice : DataComponent {
 public:	
 	Invoice();
-	Invoice(string* data);
+	Invoice(vector<string> data);
 
 	int id;
 	string buyer_id;
