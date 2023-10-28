@@ -1,5 +1,6 @@
 #pragma once
 
+#include <format>
 #include <string>
 #include <vector>
 #include <functional>
@@ -32,4 +33,8 @@ static string join(vector<string> array, string delimiter = "") {
     }
 
     return result;
+}
+
+static string limit(string text, int width) {
+    return (text.size() > width) ? std::format("{:.{}}...", text, width - 3) : std::format("{:.{}}", text, width);
 }

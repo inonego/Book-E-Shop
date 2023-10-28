@@ -6,9 +6,9 @@ Account* ShopManager::Login(string id, string password)
 		return current_user = admin;
 	}
 
-	if (account_list.find(id) != account_list.end()) {
-		Account* user = account_list[id];
+	Account* user;
 
+	if ((user = GetAccount(id)) != nullptr) {
 		if (user->password == password) {
 			return current_user = user;
 		}
