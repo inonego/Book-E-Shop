@@ -25,22 +25,22 @@ public:
 	void AddAccount(Account* account) { account_list.push_back(account); }
 	void AddInvoice(Invoice* invoice) { invoice_list.push_back(invoice); }
 
-	Product* GetProduct(int id) { 
-		auto product = find_if(product_list.begin(), product_list.end(), [&](Product* element) -> bool { return element->id == id; }); 
+	Product* GetProduct(int id) {
+		auto product = find_if(product_list.begin(), product_list.end(), [&](Product* element) -> bool { return element->id == id; });
 
 		return (product != product_list.end()) ? (*product) : nullptr;
 	};
-	Account* GetAccount(string id) { 
-		//auto account = find(account_list.begin(), account_list.end(), id);
 
-		//return (account != account_list.end()) ? (*account) : nullptr;
+	Account* GetAccount(string id) {
+		auto account = find_if(account_list.begin(), account_list.end(), [&](Account* element) -> bool { return element->id == id; });
 
-		return nullptr;
+		return (account != account_list.end()) ? (*account) : nullptr;
 	};
-	Invoice* GetInvoice(int id) { 
-		//auto invoice = find(invoice_list.begin(), invoice_list.end(), id);
 
-		//return (invoice != invoice_list.end()) ? (*invoice) : nullptr;
+	Invoice* GetInvoice(int id) {
+		auto invoice = find_if(invoice_list.begin(), invoice_list.end(), [&](Invoice* element) -> bool { return element->id == id; });
+
+		return (invoice != invoice_list.end()) ? (*invoice) : nullptr;
 	};
 
 	vector<Product*>& GetProdcutList() { return product_list; }

@@ -75,7 +75,7 @@ public:
 	public:  
 		int max_count = 10; 
 
-		MenuCode next_menu;
+		MenuCode next_menu_code;
 
 		unordered_map<char, pair<MenuCode, string>> menu;
 
@@ -159,7 +159,7 @@ public:
 							int n = page * setting.max_count + (input - '0');
 
 							if (n < v.size()) {
-								menu_manager.RunMenu(setting.next_menu, v[n]);
+								menu_manager.RunMenu(setting.next_menu_code, v[n]);
 							}
 						 } 
 

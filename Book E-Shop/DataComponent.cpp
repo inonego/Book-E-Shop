@@ -33,8 +33,15 @@ Account::Account(vector<string> data)
 	password = data[2];
 	phone_number = data[3];
 	address = data[4];
-	for (size_t i = 0; i < data.size() - 5; i++)
-		invoice_id_list.push_back(stoi(data[i+5]));
+
+	stringstream sstream(data[5]);
+
+	string input;
+
+	while (getline(sstream, input, '/')) {
+		invoice_id_list.push_back(stoi(input));
+	} 
+		
 }
 
 

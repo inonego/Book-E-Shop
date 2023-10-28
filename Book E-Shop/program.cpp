@@ -295,21 +295,14 @@ void Program::SetMenu()
 		};
 		_template.show_func = [](Product* product) -> string {
 			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", product->id, limit(product->title, 18), product->genre, product->price, product->count);
-		};
+		}; 
 		_template.SubMenu('p', MENU_A_PRODUCT_SEARCH, "상품 검색 및 장르 선택");
 		_template.SubMenu('r', MENU_A_PRODUCT_REGISTER, "상품 신규 등록");
 
+		_template.next_menu_code = MENU_A_PRODUCT_INFO;
+
 		_template.Apply(MENU_A_PRODUCT_LIST);
 	} 
-
-	menu_manager.AppendMenu(MENU_A_PRODUCT_LIST, new Menu(
-		[&](MenuIO& IO) {
-			menu_manager.PrintCommand();
-			IO.print_line();
-			
-
-		}
-	));
 	
 	// 상품 검색 및 장르 선택 메뉴화면
 	menu_manager.AppendMenu(MENU_A_PRODUCT_SEARCH, new Menu(
@@ -382,14 +375,22 @@ void Program::SetMenu()
 	#pragma endregion 
 
 	#pragma region 고객 목록
-	// 고객 목록 메뉴화면
-	menu_manager.AppendMenu(MENU_A_ACCOUNT_LIST, new Menu(
-		[&](MenuIO& IO) {
-			menu_manager.PrintCommand();
-			IO.print_line();
+	// 고객 목록 메뉴화면 
+	{
+		TemplateTable<Account*> _template;
+		_template.header_func = []() -> string {
+			return format("{0:<16}{1:<8}{2:<16}", "아이디", "이름", "전화번호");
+		};
+		_template.show_func = [](Account* product) -> string {
+			return format("{0:<16}{1:<8}{2:<16}", product->id, product->name, product->phone_number);
+		};
+		_template.SubMenu('p', MENU_A_PRODUCT_SEARCH, "고객 검색"); 
 
-		}
-	));
+		_template.next_menu_code = MENU_A_ACCOUNT_INFO;
+
+		_template.Apply(MENU_A_ACCOUNT_LIST);
+	}
+
 
 	// 고객 검색 메뉴화면
 	menu_manager.AppendMenu(MENU_A_ACCOUNT_SEARCH, new Menu(
@@ -425,7 +426,7 @@ void Program::SetMenu()
 				string input = IO.input();
 
 				if (input == "O") {
-					//IO.print("주문 처리 정보\n");
+					menu_manager.RunMenu(MENU_A_INVOICE_LIST, target->invoice_id_list);
 				}
 				else if (input == "M") {
 					//IO.print("수정\n");
@@ -450,21 +451,32 @@ void Program::SetMenu()
 		}
 	));
 	// 구매 내역 메뉴화면
-	menu_manager.AppendMenu(MENU_A_INVOICE_LIST, new Menu(
-		[&](MenuIO& IO) {
-			menu_manager.PrintCommand();
-			IO.print_line();
+	{
+		TemplateTable<int> _template;
+		_template.header_func = []() -> string {
+			return format("{0:<12}{1:<20}{2:<16}", "구매 날짜", "제목", "결제 금액");
+		};
+		_template.show_func = [](int id) -> string {
+			Invoice* invoice = shop_manager.GetInvoice(id);
+			Product* product = shop_manager.GetProduct(invoice->product_id); 
 
-		}
-	));
+			return format("{0:<12}{1:<20}{2:<16}", invoice->date, limit(product->title, 18), to_string(product->price * invoice->product_count) + "원");
+		};
+
+		_template.next_menu_code = MENU_A_INVOICE_INFO;
+
+		_template.Apply(MENU_A_INVOICE_LIST);
+	}
+
 	// 주문 상세 정보 메뉴화면
-	menu_manager.AppendMenu(MENU_A_INVOICE_INFO, new Menu<Invoice*>(
-		[&](MenuIO& IO, Invoice* target) {
+	menu_manager.AppendMenu(MENU_A_INVOICE_INFO, new Menu<int>(
+		[&](MenuIO& IO, int target_id) {
 			//all command allowed
 			menu_manager.PrintCommand();
 			IO.print_line();
 			IO.print("[주문 상세 정보]\n");
 
+			Invoice* target = shop_manager.GetInvoice(target_id);
 			Product* product = shop_manager.GetProduct(target->product_id);
 			Account* account = shop_manager.GetAccount(target->buyer_id);
 
