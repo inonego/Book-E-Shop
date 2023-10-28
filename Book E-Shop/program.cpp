@@ -141,7 +141,7 @@ void Program::SetParser()
 		->set_label("수령인의 주소")
 		->set_msg_info("수령인의 주소 입니다.")
 	);
-	data_manager.AppendParser("invoice_price", (new Parser())
+	data_manager.AppendParser("invoice_date", (new Parser())
 		->set_label("구매 날짜")
 		->set_regex(R"(YY.MM.DD)")
 		->set_msg_error("구매 날짜는 (연도).(월).(일)로 구성된 문자열이어야 합니다")
@@ -152,7 +152,7 @@ void Program::SetParser()
 	);
 	data_manager.AppendParser("invoice_product_count", (new Parser())
 		->set_label("상품 수량")
-		->set_regex(R"(^[0-9]*$)")
+		->set_regex(R"(^[1-9]*$)")
 		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다")
 	);
 #pragma endregion
@@ -269,7 +269,37 @@ void Program::SetMenu()
 			menu_manager.ToggleCommand('z', 'q');
 			menu_manager.PrintCommand();
 			IO.print_line();
+			auto checkpoint = IO.checkpoint();
+			vector<string> account;
+			string input;
+			vector<string> heads = { "이름","아이디","비밀번호","비밀번호 확인","전화번호","주소" };
+			vector<string> regex_t = { "account_name", "account_id","account_password","","account_phonenumber","account_address" };
+			int t = 0;
+			while (t < heads.size()) {				
+				if (t != 3) {//비밀번호 검사
+					checkpoint = IO.checkpoint();
+					input = IO.input("", heads[t]);
+					if (data_manager.GetParser(regex_t[t])->Check(input)) {
+						account.push_back(input);
+						t++;
+					}
+					else
+						IO.rollback(checkpoint);
+				}
+				else {
+					checkpoint = IO.checkpoint();
+					string match_p = IO.input("",heads[t]);
+					if (match_p._Equal(input))
+						t++;
+					else 
+						IO.rollback(checkpoint);
 
+				}			
+			}
+			account.push_back("");
+			shop_manager.AddAccount(new Account(account));
+			IO.pause();
+			menu_manager.RunMenu(MENU_START);
 			//id = any_cast<string>(IO.input(data_manager.GetParser("account_id")));
 			//password = any_cast<string>(IO.input(data_manager.GetParser("account_password")));
 
@@ -313,6 +343,40 @@ void Program::SetMenu()
 		}
 	));
 
+	menu_manager.AppendMenu(MENU_A_PRODUCT_REGISTER, new Menu(
+		[&](MenuIO& IO) {
+			menu_manager.PrintCommand();
+			IO.print_line();
+			IO.print("[상품 신규 등록]\n");
+			auto checkpoint = IO.checkpoint();
+			vector<string> product;
+			string input;
+			vector<string> heads = { "제목","장르","가격","재고" };
+			vector<string> regex_t = { "product_title","product_genre","product_price","product_count" };
+			int t = 0;
+			while (t < heads.size()) {
+				checkpoint = IO.checkpoint();
+				input = IO.input("", heads[t]);
+				if (data_manager.GetParser(regex_t[t])->Check(input)) {
+					product.push_back(input);
+					t++;
+				}
+				else
+					IO.rollback(checkpoint);
+			}
+			input = IO.input("상품을 등록하시겠습니까?(y/n)","");
+			if (input == "y") {
+				int id = 7 + shop_manager.GetProdcutList().size();
+				product.insert(product.begin(), to_string(id));
+				shop_manager.AddProduct(new Product(product));
+				IO.pause();
+			}
+			menu_manager.RunMenu(MENU_A_PRODUCT_LIST,shop_manager.GetProdcutList());
+			//id = any_cast<string>(IO.input(data_manager.GetParser("account_id")));
+			//password = any_cast<string>(IO.input(data_manager.GetParser("account_password")));
+		}
+	));
+
 	// 상품 등록 정보 메뉴화면
 	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO, new Menu<Product*>(
 		[&](MenuIO& IO, Product* target) {
@@ -340,7 +404,7 @@ void Program::SetMenu()
 				string input = IO.input();
 
 				if (input == "M") {
-					//IO.print("수정");
+					menu_manager.RunMenu(MENU_A_PRODUCT_INFO_M, target);
 				}
 				else if (input == "R") {
 					//IO.print("제거");
@@ -356,11 +420,36 @@ void Program::SetMenu()
 	));
 
 	// 상품 등록 정보 수정 메뉴화면
-	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO_M, new Menu(
-		[&](MenuIO& IO) {
+	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO_M, new Menu<Product*>(
+		[&](MenuIO& IO,Product* target)  {
 			menu_manager.PrintCommand();
 			IO.print_line();
-
+			IO.print("[상품 등록 정보 수정]\n");
+			auto checkpoint = IO.checkpoint();
+			vector<string> product;
+			string input;
+			vector<string> heads = { "제목","장르","가격","재고" };
+			vector<string> regex_t = { "product_title","product_genre","product_price","product_count" };
+			int t = 0;
+			while (t < heads.size()) {
+				checkpoint = IO.checkpoint();
+				input = IO.input("", heads[t]);
+				if (data_manager.GetParser(regex_t[t])->Check(input) || input._Equal("")) {
+					product.push_back(input);
+					t++;
+				}
+				else
+					IO.rollback(checkpoint);
+			}
+			input = IO.input("상품 등록 정보를 수정하시겠습니까?(y/n)", "");
+			if (input == "y") {
+				target->title = product[0]._Equal("") ? target->title : product[0];
+				target->genre = product[1]._Equal("") ? target->genre : product[1];
+				target->price = product[2]._Equal("") ? target->price : stoi(product[2]);
+				target->count = product[3]._Equal("") ? target->count : stoi(product[3]);
+				IO.pause();
+			}
+			menu_manager.RunMenu(MENU_A_PRODUCT_INFO, target);
 		}
 	));
 
@@ -409,10 +498,10 @@ void Program::SetMenu()
 			IO.print_line();
 			IO.print("[고객 계정 정보]\n");
 
-			IO.print(format("고유번호 : {0}\n", target->name));
-			IO.print(format("제목 : {0}\n", target->id));
-			IO.print(format("장르 : {0}\n", target->phone_number));
-			IO.print(format("가격 : {0}\n", target->address));
+			IO.print(format("이름 : {0}\n", target->name));
+			IO.print(format("아이디 : {0}\n", target->id));
+			IO.print(format("전화번호 : {0}\n", target->phone_number));
+			IO.print(format("주소 : {0}\n", target->address));
 
 			IO.print_line();
 
@@ -429,7 +518,7 @@ void Program::SetMenu()
 					menu_manager.RunMenu(MENU_A_INVOICE_LIST, target->invoice_id_list);
 				}
 				else if (input == "M") {
-					//IO.print("수정\n");
+					menu_manager.RunMenu(MENU_A_ACCOUNT_INFO_M, target);
 				}
 				else {
 					IO.print("일치하는 명령어가 없음.\n");
@@ -443,11 +532,45 @@ void Program::SetMenu()
 	));
 
 	// 고객 계정 정보 수정 메뉴화면
-	menu_manager.AppendMenu(MENU_A_ACCOUNT_INFO_M, new Menu(
-		[&](MenuIO& IO) {
+	menu_manager.AppendMenu(MENU_A_ACCOUNT_INFO_M, new Menu<Account*>(
+		[&](MenuIO& IO, Account* target) {
 			menu_manager.PrintCommand();
 			IO.print_line();
-
+			IO.print("[고객 계정 정보 수정]\n");
+			auto checkpoint = IO.checkpoint();
+			vector<string> account;
+			string input, match_p;
+			vector<string> heads = { "비밀번호","비밀번호 확인","전화번호","주소" };
+			vector<string> regex_t = { "account_password","","account_phonenumber","account_address" };
+			int t = 0;
+			while (t < heads.size()) {
+				if (t != 1) {
+					checkpoint = IO.checkpoint();
+					input = IO.input("", heads[t]);
+					if (data_manager.GetParser(regex_t[t])->Check(input) || input._Equal("")) {
+						account.push_back(input);
+						t++;
+					}
+					else
+						IO.rollback(checkpoint);
+				}
+				else{
+					checkpoint = IO.checkpoint();
+					match_p = IO.input("", heads[t]);
+					if (input._Equal(match_p))
+						t++;
+					else
+						IO.rollback(checkpoint);
+				}
+			}
+			input = IO.input("계정 정보를 수정하시겠습니까?(y/n)", "");
+			if (input == "y") {
+				target->password = account[0]._Equal("") ? target->password : account[0];
+				target->phone_number = account[1]._Equal("") ? target->phone_number : account[1];
+				target->address = account[2]._Equal("") ? target->address : account[2];
+				IO.pause();
+			}
+			menu_manager.RunMenu(MENU_A_ACCOUNT_INFO, target);
 		}
 	));
 	// 구매 내역 메뉴화면
@@ -514,9 +637,25 @@ void Program::SetMenu()
 	// 구매자 메뉴화면
 	{
 		TemplateMenuSelection _template;
-		_template.SubMenu("상품 관리 (등록/수정/제거, 재고관리)", []() { MENU_B_PRODUCT_LIST, shop_manager.GetProdcutList(); });
-		_template.SubMenu("고객 계정 정보", []() { menu_manager.RunMenu(MENU_B_ACCOUNT_INFO); });
+		_template.SubMenu("상품 목록", []() { menu_manager.RunMenu(MENU_B_PRODUCT_LIST, shop_manager.GetProdcutList()); });
+		_template.SubMenu("고객 계정 정보", []() { menu_manager.RunMenu(MENU_B_ACCOUNT_INFO, shop_manager.GetUser()); });
 		_template.Apply(MENU_BUYER);
+	}
+
+	// 상품 목록 메뉴화면
+	{
+		TemplateTable<Product*> _template;
+		_template.header_func = []() -> string {
+			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", "ID", "상품", "장르", "가격", "재고");
+		};
+		_template.show_func = [](Product* product) -> string {
+			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", product->id, limit(product->title, 18), product->genre, product->price, product->count);
+		};
+		_template.SubMenu('p', MENU_B_PRODUCT_SEARCH, "상품 검색 및 장르 선택");
+
+		_template.next_menu_code = MENU_B_PRODUCT_INFO;
+
+		_template.Apply(MENU_B_PRODUCT_LIST);
 	}
 	// 상품 상세 정보 확인 메뉴화면
 	menu_manager.AppendMenu(MENU_B_PRODUCT_INFO, new Menu<Product*>(
@@ -545,7 +684,7 @@ void Program::SetMenu()
 				string input = IO.input();
 
 				if (input == "B") {
-					//IO.print("구매");
+					menu_manager.RunMenu(MENU_B_PRODUCT_BUY, target);
 				}
 				else {
 					IO.print("일치하는 명령어가 없음.\n");
@@ -557,6 +696,55 @@ void Program::SetMenu()
 		}
 	));
 
+	menu_manager.AppendMenu(MENU_B_PRODUCT_BUY, new Menu<Product*>(
+		[&](MenuIO& IO, Product* target) {
+			menu_manager.PrintCommand();
+			string input;
+			Account* user = shop_manager.GetUser();
+			vector<string> invoice = { user->id,user->phone_number,user->address, "23.10.29", to_string(target->id)};
+			IO.print_line();
+			IO.print("[상품 구매]\n");
+			IO.print("[상품 상세 정보]\n");
+			IO.print(format("고유번호 : {0}\n", target->id));
+			IO.print(format("제목 : {0}\n", target->title));
+			IO.print(format("장르 : {0}\n", target->genre));
+			IO.print(format("가격 : {0}\n", target->price));
+			IO.print_line();
+			auto checkpoint = IO.checkpoint();
+			while (true) {
+				input = IO.input("주문 수량을 입력하세요");
+				if (data_manager.GetParser("invoice_product_count")->Check(input)) {
+					if (target->count >= stoi(input))
+					{
+						invoice.push_back(input);
+						break;
+					}
+				}
+				IO.rollback(checkpoint);
+			}
+			IO.print_line();
+			IO.print("[주문자 정보]\n");
+			IO.print(format("이름 : {0}\n", user->name));
+			IO.print(format("전화번호 : {0}\n", user->phone_number));
+			IO.print(format("주소 : {0}\n", user->address));
+			IO.print_line();
+			IO.print("[결제금액]\n");
+			IO.print(format("{0}원 X {1}권 = {2}원\n", target->price, stoi(input), target->price * stoi(input)));
+			IO.print_line();
+			input = IO.input("상품을 주문하시겠습니까?(y/n)");
+			if (input == "y") {
+				int id = 7 + shop_manager.GetInvoiceList().size();
+				invoice.insert(invoice.begin(), to_string(id));
+				shop_manager.AddInvoice(new Invoice(invoice));
+				user->invoice_id_list.push_back(id);
+				IO.pause();
+				IO.print("상품을 구매하였습니다.\n");
+			}
+			menu_manager.RunMenu(MENU_B_PRODUCT_INFO, target);
+		}
+	));
+
+
 	// 고객 계정 정보 관리 메뉴화면
 	menu_manager.AppendMenu(MENU_B_ACCOUNT_INFO, new Menu<Account*>(
 		[&](MenuIO& IO, Account* target) {
@@ -565,10 +753,10 @@ void Program::SetMenu()
 			IO.print_line();
 			IO.print("[고객 계정 정보]\n");
 
-			IO.print(format("고유번호 : {0}\n", target->name));
-			IO.print(format("제목 : {0}\n", target->id));
-			IO.print(format("장르 : {0}\n", target->phone_number));
-			IO.print(format("가격 : {0}\n", target->address));
+			IO.print(format("이름 : {0}\n", target->name));
+			IO.print(format("아이디 : {0}\n", target->id));
+			IO.print(format("전화번호 : {0}\n", target->phone_number));
+			IO.print(format("주소 : {0}\n", target->address));
 
 			IO.print_line();
 
@@ -582,10 +770,10 @@ void Program::SetMenu()
 				string input = IO.input();
 
 				if (input == "O") {
-					//IO.print("주문 처리 정보\n");
+					menu_manager.RunMenu(MENU_B_INVOICE_LIST, target->invoice_id_list);
 				}
 				else if (input == "M") {
-					//IO.print("수정\n");
+					menu_manager.RunMenu(MENU_B_ACCOUNT_INFO_M, target);
 				}
 				else {
 					IO.print("일치하는 명령어가 없음.\n");
@@ -597,15 +785,77 @@ void Program::SetMenu()
 
 		}
 	));
+	// 고객 계정 정보 수정 메뉴화면
+	menu_manager.AppendMenu(MENU_B_ACCOUNT_INFO_M, new Menu<Account*>(
+		[&](MenuIO& IO, Account* target) {
+			menu_manager.PrintCommand();
+			IO.print_line();
+			IO.print("[고객 계정 정보 수정]\n");
+			auto checkpoint = IO.checkpoint();
+			vector<string> account;
+			string input, match_p;
+			vector<string> heads = { "비밀번호","비밀번호 확인","전화번호","주소" };
+			vector<string> regex_t = { "account_password","","account_phonenumber","account_address" };
+			int t = 0;
+			while (t < heads.size()) {
+				if (t != 1) {
+					checkpoint = IO.checkpoint();
+					input = IO.input("", heads[t]);
+					if (data_manager.GetParser(regex_t[t])->Check(input) || input._Equal("")) {
+						account.push_back(input);
+						t++;
+					}
+					else
+						IO.rollback(checkpoint);
+				}
+				else {
+					checkpoint = IO.checkpoint();
+					match_p = IO.input("", heads[t]);
+					if (input._Equal(match_p))
+						t++;
+					else
+						IO.rollback(checkpoint);
+				}
+			}
+			input = IO.input("계정 정보를 수정하시겠습니까?(y/n)", "");
+			if (input == "y") {
+				target->password = account[0]._Equal("") ? target->password : account[0];
+				target->phone_number = account[1]._Equal("") ? target->phone_number : account[1];
+				target->address = account[2]._Equal("") ? target->address : account[2];
+				IO.pause();
+			}
+			menu_manager.RunMenu(MENU_B_ACCOUNT_INFO, target);
+		}
+	));
 
-	// 주문 처리 정보 확인 메뉴화면
-	menu_manager.AppendMenu(MENU_B_INVOICE_INFO, new Menu<Invoice*>(
-		[&](MenuIO& IO, Invoice* target) {
+
+	// 구매 내역 메뉴화면
+	{
+		TemplateTable<int> _template;
+		_template.header_func = []() -> string {
+			return format("{0:<12}{1:<20}{2:<16}", "구매 날짜", "제목", "결제 금액");
+		};
+		_template.show_func = [](int id) -> string {
+			Invoice* invoice = shop_manager.GetInvoice(id);
+			Product* product = shop_manager.GetProduct(invoice->product_id);
+
+			return format("{0:<12}{1:<20}{2:<16}", invoice->date, limit(product->title, 18), to_string(product->price * invoice->product_count) + "원");
+		};
+
+		_template.next_menu_code = MENU_B_INVOICE_INFO;
+
+		_template.Apply(MENU_B_INVOICE_LIST);
+	}
+
+	// 주문 상세 정보 메뉴화면
+	menu_manager.AppendMenu(MENU_B_INVOICE_INFO, new Menu<int>(
+		[&](MenuIO& IO, int target_id) {
 			//all command allowed
 			menu_manager.PrintCommand();
 			IO.print_line();
 			IO.print("[주문 상세 정보]\n");
 
+			Invoice* target = shop_manager.GetInvoice(target_id);
 			Product* product = shop_manager.GetProduct(target->product_id);
 			Account* account = shop_manager.GetAccount(target->buyer_id);
 
@@ -628,20 +878,11 @@ void Program::SetMenu()
 			IO.print(format("상품 수량 : {0}\n", target->product_count));
 			IO.print(format("결제 금액 : {0}\n", product->price * target->product_count));
 			IO.print_line();
-			IO.print("아무 키나 입력하세요\n");
-
-			auto checkpoint = IO.checkpoint();
-			string input = IO.input();
-
+			IO.pause();
+			menu_manager.RunMenu(MENU_B_INVOICE_LIST,shop_manager.GetInvoiceList());
 		}
 	));
-	{
-		TemplateMenuSelection _template;
 
-		_template.SubMenu("상품 관리 (등록/수정/제거, 재고관리)", []() { MENU_B_PRODUCT_LIST, shop_manager.GetProdcutList(); });
-		_template.SubMenu("고객 계정 정보",						  []() { menu_manager.RunMenu(MENU_B_ACCOUNT_INFO); }); 
-		_template.Apply(MENU_BUYER);
-	}
 #pragma endregion
 }
 #pragma endregion

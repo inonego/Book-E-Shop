@@ -46,4 +46,6 @@ public:
 	vector<Product*>& GetProdcutList() { return product_list; }
 	vector<Account*>& GetAccountList() { return account_list; }
 	vector<Invoice*>& GetInvoiceList() { return invoice_list; }
+
+	Account* GetUser() { return current_user; }
 };
