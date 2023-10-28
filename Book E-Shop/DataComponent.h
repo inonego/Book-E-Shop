@@ -37,8 +37,6 @@ public:
 
 	virtual string GetKey() override;
 	virtual string* ToArray() override;
-
-	bool operator==(const int& other) const;
 };
 
 
@@ -59,8 +57,6 @@ public:
 
 	virtual string GetKey() override; 
 	virtual string* ToArray() override; 
-
-	bool operator==(const string& other) const;
 };
 
 // 주문 처리 정보
@@ -79,6 +75,4 @@ public:
 
 	virtual string GetKey() override; 
 	virtual string* ToArray() override;
-
-	bool operator==(const int& other) const;
 };

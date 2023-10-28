@@ -465,8 +465,8 @@ void Program::SetMenu()
 			IO.print_line();
 			IO.print("[주문 상세 정보]\n");
 
-			Product* product = shop_manager.FindProduct(target->product_id);
-			Account* account = shop_manager.FindAccount(target->buyer_id);
+			Product* product = shop_manager.GetProduct(target->product_id);
+			Account* account = shop_manager.GetAccount(target->buyer_id);
 
 			IO.print(format("구매 날짜 : {0}\n", target->date));
 
@@ -500,8 +500,12 @@ void Program::SetMenu()
 
 #pragma region 구매자 메뉴화면
 	// 구매자 메뉴화면
-	TemplateMenuSelection(MENU_BUYER, make_pair(MENU_B_PRODUCT_LIST, "상품 목록"), make_pair(MENU_B_ACCOUNT_INFO, "고객 계정 정보"));
-
+	{
+		TemplateMenuSelection _template;
+		_template.SubMenu("상품 관리 (등록/수정/제거, 재고관리)", []() { MENU_B_PRODUCT_LIST, shop_manager.GetProdcutList(); });
+		_template.SubMenu("고객 계정 정보", []() { menu_manager.RunMenu(MENU_B_ACCOUNT_INFO); });
+		_template.Apply(MENU_BUYER);
+	}
 	// 상품 상세 정보 확인 메뉴화면
 	menu_manager.AppendMenu(MENU_B_PRODUCT_INFO, new Menu<Product*>(
 		[&](MenuIO& IO, Product* target) {
@@ -590,8 +594,8 @@ void Program::SetMenu()
 			IO.print_line();
 			IO.print("[주문 상세 정보]\n");
 
-			Product* product = shop_manager.FindProduct(target->product_id);
-			Account* account = shop_manager.FindAccount(target->buyer_id);
+			Product* product = shop_manager.GetProduct(target->product_id);
+			Account* account = shop_manager.GetAccount(target->buyer_id);
 
 			IO.print(format("구매 날짜 : {0}\n", target->date));
 

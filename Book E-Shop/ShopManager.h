@@ -26,10 +26,9 @@ public:
 	void AddInvoice(Invoice* invoice) { invoice_list.push_back(invoice); }
 
 	Product* GetProduct(int id) { 
-		//auto product = find(product_list.begin(), product_list.end(), id);
+		auto product = find_if(product_list.begin(), product_list.end(), [&](Product* element) -> bool { return element->id == id; }); 
 
-		//return (product != product_list.end()) ? (*product) : nullptr;
-		
+		return (product != product_list.end()) ? (*product) : nullptr;
 	};
 	Account* GetAccount(string id) { 
 		//auto account = find(account_list.begin(), account_list.end(), id);
