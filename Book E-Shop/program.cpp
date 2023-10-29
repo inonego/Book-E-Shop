@@ -67,7 +67,7 @@ void Program::SetParser()
 #pragma region *** account Parser ***
 	data_manager.AppendParser("account_name", (new Parser())
 		->set_label("ÀÌ¸§")
-		->set_regex(R"(^[ ]*[a-zA-Z°¡-ÆR]+[ a-zA-Z°¡-ÆR]*$)")
+		->set_regex(R"(^[ ]*[a-zA-Z°¡-ÆR]+[a-zA-Z°¡-ÆR]*$)")
 		->set_msg_error("ÀÌ¸§Àº °ø¹é, ¿µ¹®ÀÚ, ÇÑ±Û Çã¿ëÇÑ °ø¹éÀ» Á¦¿ÜÇÑ ±æÀÌ°¡ 1 ÀÌ»óÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
 	);
 	data_manager.AppendParser("account_id", (new Parser())
@@ -276,8 +276,11 @@ void Program::SetMenu()
 						account.push_back(input);
 						t++;
 					}
-					else
+					else {
+						IO.print(data_manager.GetParser(regex_t[t])->msg_error);
+						IO.pause();
 						IO.rollback(checkpoint);
+					}
 				}
 				else {
 					checkpoint = IO.checkpoint();
@@ -285,7 +288,11 @@ void Program::SetMenu()
 					if (match_p._Equal(input))
 						t++;
 					else 
+					{
+						IO.print("'ºñ¹Ğ¹øÈ£ È®ÀÎ'ÀÌ 'ºñ¹Ğ¹øÈ£'¿Í ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù");
+						IO.pause();
 						IO.rollback(checkpoint);
+					}
 
 				}			
 			}
@@ -360,11 +367,15 @@ void Program::SetMenu()
 					t++;
 				}
 				else
+				{
+					IO.print(data_manager.GetParser(regex_t[t])->msg_error);
+					IO.pause();
 					IO.rollback(checkpoint);
+				}
 			}
 			input = IO.input("»óÇ°À» µî·ÏÇÏ½Ã°Ú½À´Ï±î?(y/n)","");
 			if (input == "y") {
-				int id = 7 + shop_manager.GetProdcutList().size();
+				int id = 7 + shop_manager.GetProdcutList().size();//id »ı¼º ¸ÅÄ¿´ÏÁò??
 				product.insert(product.begin(), to_string(id));
 				shop_manager.AddProduct(new Product(product));
 				IO.pause();
@@ -436,7 +447,11 @@ void Program::SetMenu()
 					t++;
 				}
 				else
+				{
+					IO.print(data_manager.GetParser(regex_t[t])->msg_error);
+					IO.pause();
 					IO.rollback(checkpoint);
+				}
 			}
 			input = IO.input("»óÇ° µî·Ï Á¤º¸¸¦ ¼öÁ¤ÇÏ½Ã°Ú½À´Ï±î?(y/n)", "");
 			if (input == "y") {
@@ -551,7 +566,11 @@ void Program::SetMenu()
 						t++;
 					}
 					else
+					{
+						IO.print(data_manager.GetParser(regex_t[t])->msg_error);
+						IO.pause();
 						IO.rollback(checkpoint);
+					}
 				}
 				else{
 					checkpoint = IO.checkpoint();
@@ -559,7 +578,11 @@ void Program::SetMenu()
 					if (input._Equal(match_p))
 						t++;
 					else
+					{
+						IO.print("'ºñ¹Ğ¹øÈ£ È®ÀÎ'ÀÌ 'ºñ¹Ğ¹øÈ£'¿Í ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù");
+						IO.pause();
 						IO.rollback(checkpoint);
+					}
 				}
 			}
 			input = IO.input("°èÁ¤ Á¤º¸¸¦ ¼öÁ¤ÇÏ½Ã°Ú½À´Ï±î?(y/n)", "");
@@ -724,6 +747,8 @@ void Program::SetMenu()
 						break;
 					}
 				}
+				IO.print(data_manager.GetParser("invoice_product_count")->msg_error);
+				IO.pause();
 				IO.rollback(checkpoint);
 			}
 			IO.print_line();
@@ -737,7 +762,7 @@ void Program::SetMenu()
 			IO.print_line();
 			input = IO.input("»óÇ°À» ÁÖ¹®ÇÏ½Ã°Ú½À´Ï±î?(y/n)");
 			if (input == "y") {
-				int id = 7 + shop_manager.GetInvoiceList().size();
+				int id = 7 + shop_manager.GetInvoiceList().size(); //id »ı¼º ¸ÅÄ¿´ÏÁò??
 				invoice.insert(invoice.begin(), to_string(id));
 				shop_manager.AddInvoice(new Invoice(invoice));
 				user->invoice_id_list.push_back(id);
@@ -810,7 +835,11 @@ void Program::SetMenu()
 						t++;
 					}
 					else
+					{
+						IO.print(data_manager.GetParser(regex_t[t])->msg_error);
+						IO.pause();
 						IO.rollback(checkpoint);
+					}
 				}
 				else {
 					checkpoint = IO.checkpoint();
@@ -818,7 +847,11 @@ void Program::SetMenu()
 					if (input._Equal(match_p))
 						t++;
 					else
+					{
+						IO.print("'ºñ¹Ğ¹øÈ£ È®ÀÎ'ÀÌ 'ºñ¹Ğ¹øÈ£'¿Í ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù");
+						IO.pause();
 						IO.rollback(checkpoint);
+					}
 				}
 			}
 			input = IO.input("°èÁ¤ Á¤º¸¸¦ ¼öÁ¤ÇÏ½Ã°Ú½À´Ï±î?(y/n)", "");
