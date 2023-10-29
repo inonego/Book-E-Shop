@@ -90,8 +90,6 @@ public:
 	void RunRecursiveMenu(MenuCode menu_code, TP ...args);
 
 	void RunPreviousMenu();
-
-	IMenu* operator[](MenuCode menu_code);
 }; 
 
 inline void MenuManager::RunMenuInternal(MenuCode menu_code)
@@ -139,11 +137,13 @@ inline void MenuManager::RunPreviousMenu()
 {
 	MenuCode menu_code = MENU_NONE;
 
-	if (menu_stack.size() > 1) {
+	if (menu_stack.size() >= 1) {
 		menu_stack.pop_back();
-
-		menu_code = menu_stack.back();
 	} 
+
+	if (menu_stack.size() >= 1) {
+		menu_code = menu_stack.back();
+	}
 
 	throw menu_code;
 }

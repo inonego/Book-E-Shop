@@ -18,11 +18,12 @@ public:
 	static void LoadCSV();
 	static void SetCommand();
 	static void SetParser();
-	static void SetPrevMenuCode();
 	static void SetMenu();
 
 	class Template {
 	protected:
+		string name;
+
 		bool command_toggled = false;
  
 		unordered_set<char> command_availability;
@@ -38,6 +39,10 @@ public:
 		template<typename... TP, typename = char>
 		void ToggleCommand(TP... command) {
 			ToggleCommand({ command... });
+		}
+
+		void SetName(string name) {
+			this->name = name;
 		}
 
 		virtual void Apply(MenuCode menu_code) = 0;
@@ -58,6 +63,7 @@ public:
 				if (setting.command_toggled) menu_manager.ToggleCommand(setting.command_availability);
 				menu_manager.PrintCommand();
 				IO.print_line(); 
+				IO.print_aligned_center(format("[ {} ]", setting.name));
 
 				for (int i = 0; i < setting.menu.size(); i++) {
 					IO.print_aligned_center(format("({0}) {1}", i + 1, setting.menu[i].first));
@@ -111,6 +117,7 @@ public:
 				if (setting.command_toggled) menu_manager.ToggleCommand(setting.command_availability);
 				menu_manager.PrintCommand();
 				IO.print_line();
+				IO.print_aligned_center(format("[ {} ]", setting.name));
 
 				int page = 0;
 

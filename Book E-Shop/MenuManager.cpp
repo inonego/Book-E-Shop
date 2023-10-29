@@ -55,14 +55,17 @@ void MenuManager::Start(MenuCode menu_code)
 	GetMenu(menu_code)->SetArgs();
 
 	while (true) {
+		if (menu_code == MENU_NONE) return;
+
 		IO::Buffer* buffer = new IO::Buffer();
 
 		this->IO.set_buffer(buffer);
 
 		ToggleCommand('z', 'l', 'q');
 
-		try { 
+		try {
 			RunMenuInternal(menu_code);
+			RunPreviousMenu();
 		}
 		catch (MenuCode next_menu_code) { 
 			menu_code = next_menu_code;
@@ -128,10 +131,5 @@ void MenuManager::PrintCommand()
 
 IMenu* MenuManager::GetMenu(MenuCode menu_code)
 { 
-	return menu_list[menu_code];
-}
-
-IMenu* MenuManager::operator[](MenuCode menu_code)
-{
 	return menu_list[menu_code];
 }

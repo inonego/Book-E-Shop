@@ -13,7 +13,6 @@ void Program::Run()
 	SetCommand();
 	SetParser();
 	SetMenu();
-	SetPrevMenuCode();
 
 	menu_manager.Start(MENU_START);
 }
@@ -169,39 +168,6 @@ void Program::SetParser()
 #pragma endregion
 
 #pragma region 메뉴화면 구현
-void Program::SetPrevMenuCode()
-{
-	/*
-	// 각 메뉴에서 뒤로가기를 위한 이전 메뉴를 설정하는 것으로 엑셀로 관리됩니다.
-	menu_manager[MENU_QUIT]->set_prev_menu_code(MENU_NONE);
-	menu_manager[MENU_LOGOUT]->set_prev_menu_code(MENU_NONE);
-	menu_manager[MENU_START]->set_prev_menu_code(MENU_NONE);
-	menu_manager[MENU_LOGIN]->set_prev_menu_code(MENU_START);
-	menu_manager[MENU_SIGNUP]->set_prev_menu_code(MENU_START);
-	menu_manager[MENU_ADMIN]->set_prev_menu_code(MENU_START);
-	menu_manager[MENU_A_PRODUCT_LIST]->set_prev_menu_code(MENU_ADMIN);
-	menu_manager[MENU_A_PRODUCT_SEARCH]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
-	menu_manager[MENU_A_PRODUCT_REGISTER]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
-	menu_manager[MENU_A_PRODUCT_INFO]->set_prev_menu_code(MENU_A_PRODUCT_LIST);
-	menu_manager[MENU_A_PRODUCT_INFO_M]->set_prev_menu_code(MENU_A_PRODUCT_INFO);
-	menu_manager[MENU_A_PRODUCT_INFO_R]->set_prev_menu_code(MENU_A_PRODUCT_INFO);
-	menu_manager[MENU_A_ACCOUNT_LIST]->set_prev_menu_code(MENU_ADMIN);
-	menu_manager[MENU_A_ACCOUNT_SEARCH]->set_prev_menu_code(MENU_A_ACCOUNT_LIST);
-	menu_manager[MENU_A_ACCOUNT_INFO]->set_prev_menu_code(MENU_A_ACCOUNT_LIST);
-	menu_manager[MENU_A_ACCOUNT_INFO_M]->set_prev_menu_code(MENU_A_ACCOUNT_INFO);
-	menu_manager[MENU_A_INVOICE_LIST]->set_prev_menu_code(MENU_A_ACCOUNT_INFO);
-	menu_manager[MENU_A_INVOICE_INFO]->set_prev_menu_code(MENU_A_INVOICE_LIST);
-	menu_manager[MENU_BUYER]->set_prev_menu_code(MENU_START);
-	menu_manager[MENU_B_PRODUCT_LIST]->set_prev_menu_code(MENU_BUYER);
-	menu_manager[MENU_B_PRODUCT_SEARCH]->set_prev_menu_code(MENU_B_PRODUCT_LIST);
-	menu_manager[MENU_B_PRODUCT_INFO]->set_prev_menu_code(MENU_B_PRODUCT_LIST);
-	menu_manager[MENU_B_PRODUCT_BUY]->set_prev_menu_code(MENU_B_PRODUCT_INFO);
-	menu_manager[MENU_B_ACCOUNT_INFO]->set_prev_menu_code(MENU_BUYER);
-	menu_manager[MENU_B_ACCOUNT_INFO_M]->set_prev_menu_code(MENU_B_ACCOUNT_INFO);
-	menu_manager[MENU_B_INVOICE_LIST]->set_prev_menu_code(MENU_B_ACCOUNT_INFO);
-	menu_manager[MENU_B_INVOICE_INFO]->set_prev_menu_code(MENU_B_INVOICE_LIST);
-	*/
-}
 
 void Program::SetMenu()
 {	
@@ -211,6 +177,7 @@ void Program::SetMenu()
 		menu_manager.PrintCommand();
 
 		IO.print_line();
+		IO.print_aligned_center("[ 프로그램 종료 ]");
 		IO.print("프로그램을 종료하시겠습니까? (y / n)\n");
 		string input = IO.input();
 
@@ -224,6 +191,7 @@ void Program::SetMenu()
 		menu_manager.PrintCommand();
 
 		IO.print_line();
+		IO.print_aligned_center("[ 계정 로그아웃 ]");
 		IO.print("계정에서 로그아웃 하시겠습니까? (y / n)\n");
 		string input = IO.input();
 
@@ -241,6 +209,7 @@ void Program::SetMenu()
 	{
 		TemplateMenuSelection _template;
 		_template.ToggleCommand('q');
+		_template.SetName("시작 메뉴");
 		_template.SubMenu("계정 로그인",   []() { menu_manager.RunMenu(MENU_LOGIN);  });	
 		_template.SubMenu("계정 회원가입", []() { menu_manager.RunMenu(MENU_SIGNUP); });
 		_template.Apply(MENU_START);
@@ -252,6 +221,7 @@ void Program::SetMenu()
 			menu_manager.ToggleCommand('z', 'q');
 			menu_manager.PrintCommand();
 			IO.print_line();
+			IO.print_aligned_center("[ 계정 로그인 ]");
 
 			string id, password;
 
@@ -275,7 +245,7 @@ void Program::SetMenu()
 					}
 				}
 				else {
-					IO.print("일치하는 계정 정보를 찾을 수 없습니다.\n");
+					IO.print("아이디가 존재하지 않거나 비밀번호가 올바르지 않습니다.\n");
 					IO.pause();
 
 					IO.rollback(checkpoint);
@@ -290,6 +260,8 @@ void Program::SetMenu()
 			menu_manager.ToggleCommand('z', 'q');
 			menu_manager.PrintCommand();
 			IO.print_line();
+			IO.print_aligned_center("[ 계정 회원가입 ]");
+
 			auto checkpoint = IO.checkpoint();
 			vector<string> account;
 			string input;
@@ -332,7 +304,8 @@ void Program::SetMenu()
 	// 관리자 메뉴화면
 	{
 		TemplateMenuSelection _template;
-		_template.ToggleCommand('l', 'q');
+		_template.ToggleCommand('l', 'q'); 
+		_template.SetName("관리자 메뉴화면");
 		_template.SubMenu("상품 관리 (등록/수정/제거, 재고관리)", []() { menu_manager.RunMenu(MENU_A_PRODUCT_LIST, shop_manager.GetProdcutList()); });
 		_template.SubMenu("고객 관리 (계정, 주문)",				  []() { menu_manager.RunMenu(MENU_A_ACCOUNT_LIST, shop_manager.GetAccountList()); });
 		_template.Apply(MENU_ADMIN);
@@ -342,6 +315,7 @@ void Program::SetMenu()
 	// 상품 목록 메뉴화면
 	{
 		TemplateTable<Product*> _template;
+		_template.SetName("상품 목록");
 		_template.header_func = []() -> string {
 			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", "ID", "상품", "장르", "가격", "재고");
 		};
@@ -360,15 +334,18 @@ void Program::SetMenu()
 	menu_manager.AppendMenu(MENU_A_PRODUCT_SEARCH, new Menu(
 		[&](MenuIO& IO) {
 			menu_manager.PrintCommand();
-			IO.print_line(); 
+			IO.print_line();
+			IO.print_aligned_center("[ 상품 검색 및 장르 선택 ]");
 		}
 	));
 
+	// 상품 신규 등록 메뉴화면
 	menu_manager.AppendMenu(MENU_A_PRODUCT_REGISTER, new Menu(
 		[&](MenuIO& IO) {
 			menu_manager.PrintCommand();
 			IO.print_line();
-			IO.print("[상품 신규 등록]\n");
+			IO.print_aligned_center("[ 상품 신규 등록 ]");
+
 			auto checkpoint = IO.checkpoint();
 			vector<string> product;
 			string input;
@@ -400,12 +377,10 @@ void Program::SetMenu()
 
 	// 상품 등록 정보 메뉴화면
 	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO, new Menu<Product*>(
-		[&](MenuIO& IO, Product* target) {
-			//all command allowed
-			menu_manager.PrintCommand();
-
-			IO.print_line();
-			IO.print("[상품등록정보]\n");
+		[&](MenuIO& IO, Product* target) { 
+			menu_manager.PrintCommand(); 
+			IO.print_line(); 
+			IO.print_aligned_center("[ 상품 등록 정보 ]");
 
 			IO.print(format("고유번호 : {0}\n", target->id));
 			IO.print(format("제목 : {0}\n", target->title));
@@ -445,7 +420,8 @@ void Program::SetMenu()
 		[&](MenuIO& IO,Product* target)  {
 			menu_manager.PrintCommand();
 			IO.print_line();
-			IO.print("[상품 등록 정보 수정]\n");
+			IO.print_aligned_center("[ 상품 등록 정보 수정 ]");
+
 			auto checkpoint = IO.checkpoint();
 			vector<string> product;
 			string input;
@@ -479,6 +455,7 @@ void Program::SetMenu()
 		[&](MenuIO& IO) {
 			menu_manager.PrintCommand();
 			IO.print_line();
+			IO.print_aligned_center("[ 상품 등록 정보 제거 ]");
 
 		}
 	));
@@ -488,6 +465,7 @@ void Program::SetMenu()
 	// 고객 목록 메뉴화면 
 	{
 		TemplateTable<Account*> _template;
+		_template.SetName("고객 목록");
 		_template.header_func = []() -> string {
 			return format("{0:<16}{1:<8}{2:<16}", "아이디", "이름", "전화번호");
 		};
@@ -507,17 +485,16 @@ void Program::SetMenu()
 		[&](MenuIO& IO) {
 			menu_manager.PrintCommand();
 			IO.print_line();
-
+			IO.print_aligned_center("[ 고객 검색 ]");
 		}
 	));
 	
 	// 고객 계정 정보 메뉴화면
 	menu_manager.AppendMenu(MENU_A_ACCOUNT_INFO, new Menu<Account*>(
 		[&](MenuIO& IO, Account* target) {
-			//all command allowed
 			menu_manager.PrintCommand();
 			IO.print_line();
-			IO.print("[고객 계정 정보]\n");
+			IO.print_aligned_center("[ 고객 계정 정보 ]");
 
 			IO.print(format("이름 : {0}\n", target->name));
 			IO.print(format("아이디 : {0}\n", target->id));
@@ -557,7 +534,8 @@ void Program::SetMenu()
 		[&](MenuIO& IO, Account* target) {
 			menu_manager.PrintCommand();
 			IO.print_line();
-			IO.print("[고객 계정 정보 수정]\n");
+			IO.print_aligned_center("[ 고객 계정 정보 수정 ]");
+
 			auto checkpoint = IO.checkpoint();
 			vector<string> account;
 			string input, match_p;
@@ -597,6 +575,7 @@ void Program::SetMenu()
 	// 구매 내역 메뉴화면
 	{
 		TemplateTable<int> _template;
+		_template.SetName("구매 내역");
 		_template.header_func = []() -> string {
 			return format("{0:<12}{1:<20}{2:<16}", "구매 날짜", "제목", "결제 금액");
 		};
@@ -615,10 +594,9 @@ void Program::SetMenu()
 	// 주문 상세 정보 메뉴화면
 	menu_manager.AppendMenu(MENU_A_INVOICE_INFO, new Menu<int>(
 		[&](MenuIO& IO, int target_id) {
-			//all command allowed
 			menu_manager.PrintCommand();
 			IO.print_line();
-			IO.print("[주문 상세 정보]\n");
+			IO.print_aligned_center("[ 주문 상세 정보 ]");
 
 			Invoice* target = shop_manager.GetInvoice(target_id);
 			Product* product = shop_manager.GetProduct(target->product_id);
@@ -658,6 +636,7 @@ void Program::SetMenu()
 	// 구매자 메뉴화면
 	{
 		TemplateMenuSelection _template;
+		_template.SetName("구매자 메뉴화면");
 		_template.ToggleCommand('l', 'q');
 		_template.SubMenu("상품 목록", []() { menu_manager.RunMenu(MENU_B_PRODUCT_LIST, shop_manager.GetProdcutList()); });
 		_template.SubMenu("고객 계정 정보", []() { menu_manager.RunMenu(MENU_B_ACCOUNT_INFO, shop_manager.GetUser()); });
@@ -667,6 +646,7 @@ void Program::SetMenu()
 	// 상품 목록 메뉴화면
 	{
 		TemplateTable<Product*> _template;
+		_template.SetName("상품 목록");
 		_template.header_func = []() -> string {
 			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", "ID", "상품", "장르", "가격", "재고");
 		};
@@ -679,14 +659,13 @@ void Program::SetMenu()
 
 		_template.Apply(MENU_B_PRODUCT_LIST);
 	}
+
 	// 상품 상세 정보 확인 메뉴화면
 	menu_manager.AppendMenu(MENU_B_PRODUCT_INFO, new Menu<Product*>(
 		[&](MenuIO& IO, Product* target) {
-			//all command allowed
 			menu_manager.PrintCommand();
-
 			IO.print_line();
-			IO.print("[상품등록정보]\n");
+			IO.print_aligned_center("[ 상품 등록 정보 ]");
 
 			IO.print(format("고유번호 : {0}\n", target->id));
 			IO.print(format("제목 : {0}\n", target->title));
@@ -717,10 +696,13 @@ void Program::SetMenu()
 			}
 		}
 	));
-
+	// 상품 구매 메뉴화면
 	menu_manager.AppendMenu(MENU_B_PRODUCT_BUY, new Menu<Product*>(
 		[&](MenuIO& IO, Product* target) {
 			menu_manager.PrintCommand();
+			IO.print_line();
+			IO.print_aligned_center("[ 상품 구매 ]");
+
 			string input;
 			Account* user = shop_manager.GetUser();
 			vector<string> invoice = { user->id,user->phone_number,user->address, "23.10.29", to_string(target->id)};
@@ -770,10 +752,9 @@ void Program::SetMenu()
 	// 고객 계정 정보 관리 메뉴화면
 	menu_manager.AppendMenu(MENU_B_ACCOUNT_INFO, new Menu<Account*>(
 		[&](MenuIO& IO, Account* target) {
-			//all command allowed
 			menu_manager.PrintCommand();
 			IO.print_line();
-			IO.print("[고객 계정 정보]\n");
+			IO.print_aligned_center("[ 고객 계정 정보 ]");
 
 			IO.print(format("이름 : {0}\n", target->name));
 			IO.print(format("아이디 : {0}\n", target->id));
@@ -812,7 +793,8 @@ void Program::SetMenu()
 		[&](MenuIO& IO, Account* target) {
 			menu_manager.PrintCommand();
 			IO.print_line();
-			IO.print("[고객 계정 정보 수정]\n");
+			IO.print_aligned_center("[ 고객 계정 정보 수정 ]");
+
 			auto checkpoint = IO.checkpoint();
 			vector<string> account;
 			string input, match_p;
@@ -854,6 +836,7 @@ void Program::SetMenu()
 	// 구매 내역 메뉴화면
 	{
 		TemplateTable<int> _template;
+		_template.SetName("구매 내역");
 		_template.header_func = []() -> string {
 			return format("{0:<12}{1:<20}{2:<16}", "구매 날짜", "제목", "결제 금액");
 		};
@@ -872,10 +855,9 @@ void Program::SetMenu()
 	// 주문 상세 정보 메뉴화면
 	menu_manager.AppendMenu(MENU_B_INVOICE_INFO, new Menu<int>(
 		[&](MenuIO& IO, int target_id) {
-			//all command allowed
 			menu_manager.PrintCommand();
 			IO.print_line();
-			IO.print("[주문 상세 정보]\n");
+			IO.print_aligned_center("[ 주문 상세 정보 ]");
 
 			Invoice* target = shop_manager.GetInvoice(target_id);
 			Product* product = shop_manager.GetProduct(target->product_id);
