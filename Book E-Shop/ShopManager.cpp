@@ -16,3 +16,8 @@ Account* ShopManager::Login(string id, string password)
 
 	return nullptr;
 }
+
+void ShopManager::Logout()
+{
+	current_user = nullptr;
+}

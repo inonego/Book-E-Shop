@@ -16,6 +16,7 @@ private:
 public:
 
 	Account* Login(string id, string password);
+	void Logout();
 	bool SignUp(Account* account);
 	bool BuyProduct(Invoice* invoice);
 

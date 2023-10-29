@@ -58,6 +58,10 @@ private:
 public:
 	MenuIO(function<bool(MenuIO&, string)> input_func) : input_func(input_func) {}
 
+	int width = 60;
+
+	void print_aligned_center(string text);
+
 	// 화면에서 입력을 받습니다.
 	string input() override;
 
@@ -71,5 +75,5 @@ public:
 	void pause();
 
 	// 화면에 구분선을 그립니다.
-	void print_line(bool bold = true, int length = 40);
+	void print_line(bool bold = true);
 };

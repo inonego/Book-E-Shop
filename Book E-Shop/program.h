@@ -22,11 +22,28 @@ public:
 	static void SetMenu();
 
 	class Template {
-	public:
+	protected:
+		bool command_toggled = false;
+ 
+		unordered_set<char> command_availability;
+	public:  
+		// 명령어의 사용 가능 여부를 설정합니다.
+		void ToggleCommand(unordered_set<char> command_availability) {
+			this->command_availability = command_availability;
+
+			command_toggled = true;
+		}
+
+		// 명령어의 사용 가능 여부를 설정합니다.
+		template<typename... TP, typename = char>
+		void ToggleCommand(TP... command) {
+			ToggleCommand({ command... });
+		}
+
 		virtual void Apply(MenuCode menu_code) = 0;
 	};
 
-	class TemplateMenuSelection : Template {
+	class TemplateMenuSelection : public Template {
 	public:
 		vector<pair<string, action>> menu;
 
@@ -38,11 +55,12 @@ public:
 			auto func = [&, k = *this](MenuIO& IO) {
 				TemplateMenuSelection setting = k;
 
+				if (setting.command_toggled) menu_manager.ToggleCommand(setting.command_availability);
 				menu_manager.PrintCommand();
 				IO.print_line(); 
 
 				for (int i = 0; i < setting.menu.size(); i++) {
-					IO.print(format("({0}) {1}\n", i + 1, setting.menu[i].first));
+					IO.print_aligned_center(format("({0}) {1}", i + 1, setting.menu[i].first));
 				}
 
 				IO.print_line();
@@ -71,7 +89,7 @@ public:
 	};
 
 	template <typename T>
-	class TemplateTable : Template {
+	class TemplateTable : public Template {
 	public:  
 		int max_count = 10; 
 
@@ -90,6 +108,7 @@ public:
 			auto func = [&, k = *this](MenuIO& IO, vector<T>& v) {
 				TemplateTable<T> setting = k;
 
+				if (setting.command_toggled) menu_manager.ToggleCommand(setting.command_availability);
 				menu_manager.PrintCommand();
 				IO.print_line();
 
@@ -99,7 +118,7 @@ public:
 				for (auto iter = setting.menu.begin(); iter != setting.menu.end(); iter++) {
 					pair<MenuCode, string>& info = iter->second;
 
-					IO.print(format("({0}) {1}\n", (char)toupper(iter->first), info.second));
+					IO.print_aligned_center(format("({0}) {1}", (char)toupper(iter->first), info.second));
 				}
 
 				if (setting.menu.size() != 0) {
@@ -107,7 +126,7 @@ public:
 				}
 
 				// 표의 헤더를 표시합니다.
-				IO.print(format("    {0}\n", setting.header_func()));
+				IO.print_aligned_center(format("    {0}", setting.header_func()));
 
 				auto checkpoint = IO.checkpoint();
 
@@ -117,7 +136,7 @@ public:
 
 						if (index < v.size()) {
 							// 각 요소에 해당하는 열을 출력합니다.
-							IO.print(format("({0}) {1}\n", i, setting.show_func(v[index])));
+							IO.print_aligned_center(format("({0}) {1}", i, setting.show_func(v[index])));
 						}
 						else{
 							// 인덱스가 마지막을 넘어가는 경우 줄바꿈만 합니다.
@@ -127,12 +146,10 @@ public:
 
 					IO.print_line(false);
 
-					int max_page = ((int)v.size() / setting.max_count) + 1;
+					int max_page = ((int)v.size() / setting.max_count) + 1; 
 
-					int width = 42;
-
-					IO.print(format("{:^{}}\n", format("{0} / {1}", page + 1, max_page), width));
-					IO.print(format("{0:<{2}}{1:>{2}}\n", "< (B) 이전 페이지", "(N)다음 페이지 >", width / 2));
+					IO.print_aligned_center(format("{0} / {1}\n", page + 1, max_page));
+					IO.print(format("{0:<{2}}{1:>{2}}\n", "< (B) 이전 페이지", "(N)다음 페이지 >", IO.width / 2));
 
 					IO.print_line();
 

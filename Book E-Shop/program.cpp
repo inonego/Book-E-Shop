@@ -45,11 +45,7 @@ void Program::LoadCSV()
 void Program::SetCommand()
 {
 	menu_manager.AppendCommand('z', new MenuManager::Command("뒤로가기", [&]() {
-		auto prev_menu_code = menu_manager.GetCurrentMenu()->get_prev_menu_code();
-
-		if (prev_menu_code != MENU_NONE) {
-			menu_manager.RunMenu(prev_menu_code);
-		}
+		menu_manager.RunPreviousMenu();
 	}));
 
 	menu_manager.AppendCommand('l', new MenuManager::Command("로그아웃", [&]() {
@@ -175,6 +171,7 @@ void Program::SetParser()
 #pragma region 메뉴화면 구현
 void Program::SetPrevMenuCode()
 {
+	/*
 	// 각 메뉴에서 뒤로가기를 위한 이전 메뉴를 설정하는 것으로 엑셀로 관리됩니다.
 	menu_manager[MENU_QUIT]->set_prev_menu_code(MENU_NONE);
 	menu_manager[MENU_LOGOUT]->set_prev_menu_code(MENU_NONE);
@@ -203,27 +200,51 @@ void Program::SetPrevMenuCode()
 	menu_manager[MENU_B_ACCOUNT_INFO_M]->set_prev_menu_code(MENU_B_ACCOUNT_INFO);
 	menu_manager[MENU_B_INVOICE_LIST]->set_prev_menu_code(MENU_B_ACCOUNT_INFO);
 	menu_manager[MENU_B_INVOICE_INFO]->set_prev_menu_code(MENU_B_INVOICE_LIST);
+	*/
 }
 
 void Program::SetMenu()
 {	
+#pragma region 공통 메뉴화면
+	menu_manager.AppendMenu(MENU_QUIT, new Menu([&](MenuIO& IO) {
+		menu_manager.ToggleCommand();
+		menu_manager.PrintCommand();
+
+		IO.print_line();
+		IO.print("프로그램을 종료하시겠습니까? (y / n)\n");
+		string input = IO.input();
+
+		if (input == "y") {
+			exit(0);
+		}
+		}));
+
+	menu_manager.AppendMenu(MENU_LOGOUT, new Menu([&](MenuIO& IO) {
+		menu_manager.ToggleCommand();
+		menu_manager.PrintCommand();
+
+		IO.print_line();
+		IO.print("계정에서 로그아웃 하시겠습니까? (y / n)\n");
+		string input = IO.input();
+
+		if (input == "y") {
+			shop_manager.Logout();
+
+			menu_manager.RunMenu(MENU_START);
+		}
+		}));
+#pragma endregion
+
+
 #pragma region 시작 메뉴화면
 	// 시작 메뉴화면
 	{
 		TemplateMenuSelection _template;
+		_template.ToggleCommand('q');
 		_template.SubMenu("계정 로그인",   []() { menu_manager.RunMenu(MENU_LOGIN);  });	
 		_template.SubMenu("계정 회원가입", []() { menu_manager.RunMenu(MENU_SIGNUP); });
 		_template.Apply(MENU_START);
-	}
-
-	//테스트용
-	menu_manager.AppendMenu(MENU_START, new Menu(
-		[&](MenuIO& IO) {
-			//menu_manager.RunMenu(MENU_A_PRODUCT_INFO,shop_manager.FindProduct(123456));
-			//menu_manager.RunMenu(MENU_A_ACCOUNT_INFO, shop_manager.FindAccount("user1234"));
-			//menu_manager.RunMenu(MENU_A_INVOICE_INFO, shop_manager.FindInvoice(12345678));
-		}
-	));
+	} 
 
 	// 계정 로그인 메뉴화면
 	menu_manager.AppendMenu(MENU_LOGIN, new Menu(
@@ -311,6 +332,7 @@ void Program::SetMenu()
 	// 관리자 메뉴화면
 	{
 		TemplateMenuSelection _template;
+		_template.ToggleCommand('l', 'q');
 		_template.SubMenu("상품 관리 (등록/수정/제거, 재고관리)", []() { menu_manager.RunMenu(MENU_A_PRODUCT_LIST, shop_manager.GetProdcutList()); });
 		_template.SubMenu("고객 관리 (계정, 주문)",				  []() { menu_manager.RunMenu(MENU_A_ACCOUNT_LIST, shop_manager.GetAccountList()); });
 		_template.Apply(MENU_ADMIN);
@@ -321,10 +343,10 @@ void Program::SetMenu()
 	{
 		TemplateTable<Product*> _template;
 		_template.header_func = []() -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", "ID", "상품", "장르", "가격", "재고");
+			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", "ID", "상품", "장르", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", product->id, limit(product->title, 18), product->genre, product->price, product->count);
+			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", product->id, limit(product->title, 18), product->genre, to_string(product->price) + "원", product->count);
 		}; 
 		_template.SubMenu('p', MENU_A_PRODUCT_SEARCH, "상품 검색 및 장르 선택");
 		_template.SubMenu('r', MENU_A_PRODUCT_REGISTER, "상품 신규 등록");
@@ -338,8 +360,7 @@ void Program::SetMenu()
 	menu_manager.AppendMenu(MENU_A_PRODUCT_SEARCH, new Menu(
 		[&](MenuIO& IO) {
 			menu_manager.PrintCommand();
-			IO.print_line();
-
+			IO.print_line(); 
 		}
 	));
 
@@ -637,6 +658,7 @@ void Program::SetMenu()
 	// 구매자 메뉴화면
 	{
 		TemplateMenuSelection _template;
+		_template.ToggleCommand('l', 'q');
 		_template.SubMenu("상품 목록", []() { menu_manager.RunMenu(MENU_B_PRODUCT_LIST, shop_manager.GetProdcutList()); });
 		_template.SubMenu("고객 계정 정보", []() { menu_manager.RunMenu(MENU_B_ACCOUNT_INFO, shop_manager.GetUser()); });
 		_template.Apply(MENU_BUYER);

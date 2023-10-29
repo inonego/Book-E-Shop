@@ -6,18 +6,6 @@
 
 // ################### Menu Manager ################### 
 
-IMenu* MenuManager::SetCurrentMenu(MenuCode menu_code)
-{
-	if (menu_list.find(menu_code) != menu_list.end()) { 
-		return current_menu = menu_list[menu_code];
-	}
-	else {
-		cerr << "오류 : 메뉴가 존재하지 않습니다." << '\n';
-
-		exit(200);
-	}
-}
-
 MenuManager::MenuManager()
 	:
 	IO(MenuIO([&](MenuIO& IO, string input) -> bool {
@@ -64,8 +52,8 @@ MenuManager::~MenuManager()
 
 void MenuManager::Start(MenuCode menu_code)
 { 
-	RunFunc run_func = [&, menu_code](MenuIO& IO) { SetCurrentMenu(menu_code)->Run(IO); };
-	
+	GetMenu(menu_code)->SetArgs();
+
 	while (true) {
 		IO::Buffer* buffer = new IO::Buffer();
 
@@ -74,17 +62,15 @@ void MenuManager::Start(MenuCode menu_code)
 		ToggleCommand('z', 'l', 'q');
 
 		try { 
-			run_func(IO);
-
-			current_menu = nullptr;
+			RunMenuInternal(menu_code);
 		}
-		catch (RunFunc menu_func) { 
-			run_func = menu_func;
+		catch (MenuCode next_menu_code) { 
+			menu_code = next_menu_code;
 		}
 
 		delete buffer;
 
-		if (current_menu == nullptr) return;
+		if (menu_stack.empty()) return;
 	}
 }
 
@@ -137,12 +123,12 @@ void MenuManager::PrintCommand()
 		}
 	}
 
-	IO.print(join(printed, "     ") + '\n');
+	IO.print_aligned_center(join(printed, "     "));
 }
 
-IMenu* MenuManager::GetCurrentMenu()
-{
-	return current_menu;
+IMenu* MenuManager::GetMenu(MenuCode menu_code)
+{ 
+	return menu_list[menu_code];
 }
 
 IMenu* MenuManager::operator[](MenuCode menu_code)

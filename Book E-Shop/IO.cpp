@@ -89,6 +89,11 @@ IO::Buffer* IO::get_buffer()
 
 // ################### MenuIO ###################
 
+void MenuIO::print_aligned_center(string text)
+{
+	this->print(format("{:^{}}\n", text, width));
+}
+
 string MenuIO::input()
 {
 	return this->input("");
@@ -152,9 +157,9 @@ void MenuIO::pause()
 	IO::input();
 }
 
-void MenuIO::print_line(bool bold, int length)
+void MenuIO::print_line(bool bold)
 {
-	for (int i = 0; i < length; i++) {
+	for (int i = 0; i < width; i++) {
 		this->print(bold ? "=" : "-");
 	}
 
