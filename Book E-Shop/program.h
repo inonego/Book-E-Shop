@@ -76,7 +76,7 @@ public:
 				auto checkpoint = IO.checkpoint();
 
 				while (true) {
-					index = any_cast<int>(IO.input(data_manager.GetParser("MENU_MENUSELECTION")));
+					index = IO.input<int>(data_manager.GetParser("MENU_MENUSELECTION"));
 
 					if (1 <= index && index <= setting.menu.size()) {
 						(setting.menu[index - 1].second)();
@@ -160,7 +160,7 @@ public:
 
 					IO.print_line();
 
-					char input = any_cast<char>(IO.input(data_manager.GetParser("MENU_TABLE")));
+					char input = IO.input<char>(data_manager.GetParser("MENU_TABLE"));
 					
 					input = tolower(input);
 

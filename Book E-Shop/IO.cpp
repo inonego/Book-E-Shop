@@ -126,30 +126,6 @@ string MenuIO::input(string msg_info, string label)
 	return input;
 }
 
-any MenuIO::input(Parser* parser)
-{
-	any result;
-
-	auto checkpoint = this->checkpoint();
-
-	while (true) {
-		string input = this->input(parser->msg_info, parser->label);
-
-		if (parser->Check(input)) {
-			result = parser->Parse(input);
-
-			break;
-		}
-		else {
-			this->print(parser->msg_error + '\n'); this->pause();
-
-			this->rollback(checkpoint);
-		}
-	}
-
-	return result;
-}
-
 void MenuIO::pause()
 {
 	this->print("아무키나 입력하세요... \n");

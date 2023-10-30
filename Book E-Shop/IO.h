@@ -4,10 +4,11 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <exception>
+
+#include "Parser.h"
 
 using namespace std; 
-
-class Parser;
 
 class IO {
 public:  
@@ -69,7 +70,8 @@ public:
 	string input(string msg_info, string label = "입력");
 
 	// Parser를 이용해 입력을 받고, 올바른 형식이면 파싱하여 반환합니다.
-	any input(Parser* parser);
+	template <typename T = string> requires is_same_v<T, string> || is_same_v<T, char> || is_same_v<T, int>
+	T input(Parser* parser);
 
 	// "아무키나 입력하세요..."를 출력하고 대기합니다.
 	void pause();
@@ -77,3 +79,35 @@ public:
 	// 화면에 구분선을 그립니다.
 	void print_line(bool bold = true);
 };
+
+template <typename T> requires is_same_v<T, string> || is_same_v<T, char> || is_same_v<T, int>
+inline T MenuIO::input(Parser* parser)
+{
+	auto checkpoint = this->checkpoint();
+
+	while (true) {
+		string input = this->input(parser->msg_info, parser->label);
+
+		if (parser->Check(input)) {
+			if constexpr (is_same_v<T, std::string>) {
+				return input;
+			}
+			else if constexpr (is_same_v<T, char>) {
+				if (input.size() > 0) {
+					return input[0];
+				} 
+				else {
+					throw invalid_argument("빈 문자열은 문자로 변환할 수 없습니다!");
+				}
+			}
+			else if constexpr (is_same_v<T, int>) {
+				return stoi(input);
+			}
+		}
+		else {
+			this->print(parser->msg_error + '\n'); this->pause();
+
+			this->rollback(checkpoint);
+		}
+	}
+}
