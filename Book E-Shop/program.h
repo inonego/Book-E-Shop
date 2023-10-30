@@ -50,9 +50,9 @@ public:
 	};
 
 	class TemplateMenuSelection : public Template {
-	public:
-		vector<pair<string, action>> menu;
-
+	private:
+		vector<pair<string, action>> menu; 
+	public:   
 		void SubMenu(string text, action func) {
 			menu.push_back(make_pair(text, func));
 		}
@@ -97,18 +97,20 @@ public:
 
 	template <typename T>
 	class TemplateTable : public Template {
+	private:  
+		unordered_map<char, pair<string, action>> menu; 
 	public:  
-		int max_count = 10; 
+		int max_count = 10;  
 
 		MenuCode next_menu_code;
-
-		unordered_map<char, pair<MenuCode, string>> menu;
 
 		function<string(void)> header_func;
 		function<string(T& target)> show_func;
 
-		void SubMenu(char command, MenuCode menu_code, string text) {
-			menu.insert({ command, make_pair(menu_code, text) });
+		function<void(MenuIO&, MenuCode, T)> process_func;
+		 
+		void SubMenu(char command, string text, action func) {
+			menu.insert({ command, make_pair(text, func) });
 		}
 
 		void Apply(MenuCode menu_code) override {
@@ -124,9 +126,9 @@ public:
 
 				// 사용 가능한 서브 메뉴 목록을 출력합니다.
 				for (auto iter = setting.menu.begin(); iter != setting.menu.end(); iter++) {
-					pair<MenuCode, string>& info = iter->second;
+					pair<string, action>& info = iter->second;
 
-					IO.print_aligned_center(format("({0}) {1}", (char)toupper(iter->first), info.second));
+					IO.print_aligned_center(format("({0}) {1}", (char)toupper(iter->first), info.first));
 				}
 
 				if (setting.menu.size() != 0) {
@@ -184,12 +186,21 @@ public:
 							int n = page * setting.max_count + (input - '0');
 
 							if (n < v.size()) {
-								menu_manager.RunMenu(setting.next_menu_code, v[n]);
+								if (setting.process_func != nullptr) {
+									// 처리하는 함수가 존재하면 선택한 요소를 처리합니다.
+									setting.process_func(IO, setting.next_menu_code, v[n]);
+
+									break;
+								}
+								else {
+									// 처리하는 함수가 존재하지 않으면 선택한 요소를 다음 메뉴로 넘깁니다.
+									menu_manager.RunMenu(setting.next_menu_code, v[n]);
+								}
 							}
 						 } 
 
 						 if (setting.menu.find(input) != setting.menu.end()) {
-							 menu_manager.RunMenu(setting.menu[input].first);
+							 (setting.menu[input].second)();
 						 }
 
 						IO.print("메뉴에 표시된 번호 또는 알파벳 중 하나를 고르세요.\n");

@@ -1,6 +1,7 @@
 #include "program.h"
 #include "Util.h"
 
+#include <set>
 #include <format>
 
 DataManager Program::data_manager;
@@ -387,7 +388,7 @@ void Program::SetMenu()
 		TemplateMenuSelection _template;
 		_template.ToggleCommand('l', 'q'); 
 		_template.SetName("관리자 메뉴화면");
-		_template.SubMenu("상품 관리 (등록/수정/제거, 재고관리)", []() { menu_manager.RunMenu(MENU_A_PRODUCT_LIST, shop_manager.GetProdcutList()); });
+		_template.SubMenu("상품 관리 (등록/수정/제거, 재고관리)", []() { menu_manager.RunMenu(MENU_A_PRODUCT_LIST, shop_manager.GetProductList()); });
 		_template.SubMenu("고객 관리 (계정, 주문)",				  []() { menu_manager.RunMenu(MENU_A_ACCOUNT_LIST, shop_manager.GetAccountList()); });
 		_template.Apply(MENU_ADMIN);
 	}
@@ -403,22 +404,66 @@ void Program::SetMenu()
 		_template.show_func = [](Product* product) -> string {
 			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", product->id, limit(product->title, 18), product->genre, to_string(product->price) + "원", product->count);
 		}; 
-		_template.SubMenu('p', MENU_A_PRODUCT_SEARCH, "상품 검색 및 장르 선택");
-		_template.SubMenu('r', MENU_A_PRODUCT_REGISTER, "상품 신규 등록");
+		_template.SubMenu('p', "상품 검색 및 장르 선택", []() {
+			set<string> genre_set;
+
+			vector<Product*>& product_list = shop_manager.GetProductList(); 
+
+			for (int i = 0; i < product_list.size(); i++) {
+				Product* product = product_list[i];
+
+				genre_set.insert(product->genre);
+			}
+
+			vector<string> genre_list(genre_set.begin(), genre_set.end());
+
+			for (int i = 0; i < genre_list.size(); i += 10) {
+				genre_list.insert(genre_list.begin() + i, "전체");
+			}
+
+			menu_manager.RunMenu(MENU_A_PRODUCT_SEARCH, genre_list);
+		});
+
+		_template.SubMenu('r', "상품 신규 등록",         []() { menu_manager.RunMenu(MENU_A_PRODUCT_REGISTER);  });
 
 		_template.next_menu_code = MENU_A_PRODUCT_INFO;
 
 		_template.Apply(MENU_A_PRODUCT_LIST);
-	} 
-	
+	}  
+
 	// 상품 검색 및 장르 선택 메뉴화면
-	menu_manager.AppendMenu(MENU_A_PRODUCT_SEARCH, new Menu(
-		[&](MenuIO& IO) {
-			menu_manager.PrintCommand();
-			IO.print_line();
-			IO.print_aligned_center("[ 상품 검색 및 장르 선택 ]");
-		}
-	));
+	{
+		TemplateTable<string> _template;
+		_template.SetName("상품 검색 및 장르 선택");
+		_template.header_func = []() -> string {
+			return "장르";
+		};
+		_template.show_func = [](string genre) -> string {
+			return genre;
+		};
+		 
+		_template.next_menu_code = MENU_A_PRODUCT_LIST; 
+
+		_template.process_func = [&](MenuIO& IO, MenuCode next_menu_code, string genre) {
+			string input = IO.input("", "제목");
+
+			vector<Product*>& product_list = shop_manager.GetProductList();
+
+			vector<Product*> result;
+
+			for (int i = 0; i < product_list.size(); i++) {
+				Product* product = product_list[i];
+
+				if ((input == "" || product->title == input) && (genre == "전체" || product->genre == genre)) {
+					result.push_back(product);
+				}
+			}
+			 
+			menu_manager.RunMenu(next_menu_code, result);
+		};
+
+		_template.Apply(MENU_A_PRODUCT_SEARCH);
+	}
 
 	// 상품 신규 등록 메뉴화면
 	menu_manager.AppendMenu(MENU_A_PRODUCT_REGISTER, new Menu(
@@ -431,7 +476,7 @@ void Program::SetMenu()
 
 			vector<string> parser_key = { "product_title", "product_genre", "product_price", "product_count" };
 			
-			int id = 7 + shop_manager.GetProdcutList().size();
+			int id = 7 + shop_manager.GetProductList().size();
 			//id 생성 매커니즘??
 			product.push_back(to_string(id));
 
@@ -525,8 +570,7 @@ void Program::SetMenu()
 				target->price = product[2]._Equal("") ? target->price : stoi(product[2]);
 				target->count = product[3]._Equal("") ? target->count : stoi(product[3]);
 				IO.pause();
-			}
-			menu_manager.RunMenu(MENU_A_PRODUCT_INFO, target);
+			} 
 		}
 	));
 
@@ -552,7 +596,7 @@ void Program::SetMenu()
 		_template.show_func = [](Account* product) -> string {
 			return format("{0:<16}{1:<8}{2:<16}", product->id, product->name, product->phone_number);
 		};
-		_template.SubMenu('p', MENU_A_PRODUCT_SEARCH, "고객 검색"); 
+		_template.SubMenu('p', "고객 검색", []() { menu_manager.RunMenu(MENU_A_PRODUCT_SEARCH);  });
 
 		_template.next_menu_code = MENU_A_ACCOUNT_INFO;
 
@@ -657,7 +701,6 @@ void Program::SetMenu()
 				target->address = account[2]._Equal("") ? target->address : account[2];
 				IO.pause();
 			}
-			menu_manager.RunMenu(MENU_A_ACCOUNT_INFO, target);
 		}
 	));
 	// 구매 내역 메뉴화면
@@ -726,7 +769,7 @@ void Program::SetMenu()
 		TemplateMenuSelection _template;
 		_template.SetName("구매자 메뉴화면");
 		_template.ToggleCommand('l', 'q');
-		_template.SubMenu("상품 목록", []() { menu_manager.RunMenu(MENU_B_PRODUCT_LIST, shop_manager.GetProdcutList()); });
+		_template.SubMenu("상품 목록", []() { menu_manager.RunMenu(MENU_B_PRODUCT_LIST, shop_manager.GetProductList()); });
 		_template.SubMenu("고객 계정 정보", []() { menu_manager.RunMenu(MENU_B_ACCOUNT_INFO, shop_manager.GetUser()); });
 		_template.Apply(MENU_BUYER);
 	}
@@ -741,7 +784,7 @@ void Program::SetMenu()
 		_template.show_func = [](Product* product) -> string {
 			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", product->id, limit(product->title, 18), product->genre, product->price, product->count);
 		};
-		_template.SubMenu('p', MENU_B_PRODUCT_SEARCH, "상품 검색 및 장르 선택");
+		_template.SubMenu('p', "상품 검색 및 장르 선택", []() { menu_manager.RunMenu(MENU_B_PRODUCT_SEARCH); });
 
 		_template.next_menu_code = MENU_B_PRODUCT_INFO;
 
@@ -834,7 +877,6 @@ void Program::SetMenu()
 				IO.pause();
 				IO.print("상품을 구매하였습니다.\n");
 			}
-			menu_manager.RunMenu(MENU_B_PRODUCT_INFO, target);
 		}
 	));
 
@@ -926,7 +968,6 @@ void Program::SetMenu()
 				target->address = account[2]._Equal("") ? target->address : account[2];
 				IO.pause();
 			}
-			menu_manager.RunMenu(MENU_B_ACCOUNT_INFO, target);
 		}
 	));
 
@@ -981,7 +1022,6 @@ void Program::SetMenu()
 			IO.print(format("결제 금액 : {0}\n", product->price * target->product_count));
 			IO.print_line();
 			IO.pause();
-			menu_manager.RunMenu(MENU_B_INVOICE_LIST,shop_manager.GetInvoiceList());
 		}
 	));
 
