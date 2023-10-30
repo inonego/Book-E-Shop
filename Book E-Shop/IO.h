@@ -71,7 +71,7 @@ public:
 
 	// Parser를 이용해 입력을 받고, 올바른 형식이면 파싱하여 반환합니다.
 	template <typename T = string> requires is_same_v<T, string> || is_same_v<T, char> || is_same_v<T, int>
-	T input(Parser* parser);
+	T input(Parser*);
 
 	// "아무키나 입력하세요..."를 출력하고 대기합니다.
 	void pause();
@@ -89,7 +89,7 @@ inline T MenuIO::input(Parser* parser)
 		string input = this->input(parser->msg_info, parser->label);
 
 		if (parser->Check(input)) {
-			if constexpr (is_same_v<T, std::string>) {
+			if constexpr (is_same_v<T, string>) {
 				return input;
 			}
 			else if constexpr (is_same_v<T, char>) {

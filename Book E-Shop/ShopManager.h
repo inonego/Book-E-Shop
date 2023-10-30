@@ -16,9 +16,7 @@ private:
 public:
 
 	Account* Login(string id, string password);
-	void Logout();
-	bool SignUp(Account* account);
-	bool BuyProduct(Invoice* invoice);
+	void Logout(); 
 
 	Account* GetAdminAccount() { return admin; }
 	
@@ -44,7 +42,7 @@ public:
 		return (invoice != invoice_list.end()) ? (*invoice) : nullptr;
 	};
 
-	vector<Product*>& GetProdcutList() { return product_list; }
+	vector<Product*>& GetProductList() { return product_list; }
 	vector<Account*>& GetAccountList() { return account_list; }
 	vector<Invoice*>& GetInvoiceList() { return invoice_list; }
 
