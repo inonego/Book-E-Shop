@@ -57,4 +57,25 @@ vector<vector<string>> DataManager::ParseCSV(string path)
 
     return result;
 }
+
+void DataManager::SaveCSV(string path, vector<vector<string>> data, int size) {
+    std::ofstream file(path);
+    if (file.is_open()) {
+        for (const std::vector<std::string>& row : data) {
+            for (size_t i = 0; i < row.size(); ++i) {
+                file << row[i];
+                if (i < row.size() - 1) {
+                    file << ",";
+                }
+            }
+            file << "\n";
+        }
+        file.close();
+        std::cout << "Successfully Save" << std::endl;
+    }
+    else {
+        std::cerr << "file is not Opened" << std::endl;
+    }
+
+}
  

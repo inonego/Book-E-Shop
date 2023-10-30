@@ -20,4 +20,5 @@ public:
 	Parser* GetParser(string parser_name);
 
 	vector<vector<string>> ParseCSV(string path);
+	void SaveCSV(string path, vector<vector<string>> data, int size);
 };

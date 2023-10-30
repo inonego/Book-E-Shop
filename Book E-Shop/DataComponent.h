@@ -20,7 +20,7 @@ public:
 	virtual string GetKey() = 0;
 
 	// 데이터 요소를 배열로 변환합니다.
-	virtual string* ToArray() = 0; 
+	virtual vector<string> ToArray() = 0;
 };
 
 // 상품 등록 정보
@@ -36,7 +36,7 @@ public:
 	int count;
 
 	virtual string GetKey() override;
-	virtual string* ToArray() override;
+	virtual vector<string> ToArray() override;
 };
 
 
@@ -56,7 +56,7 @@ public:
 	vector<int> invoice_id_list;
 
 	virtual string GetKey() override; 
-	virtual string* ToArray() override; 
+	virtual vector<string> ToArray() override;
 };
 
 // 주문 처리 정보
@@ -74,5 +74,5 @@ public:
 	int product_count;
 
 	virtual string GetKey() override; 
-	virtual string* ToArray() override;
+	virtual vector<string> ToArray() override;
 };

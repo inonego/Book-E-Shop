@@ -68,17 +68,23 @@ string Invoice::GetKey()
 	return to_string(id);
 }
 
-string* Product::ToArray()
+vector<string> Product::ToArray()
 {
-	return &(vector<string> {to_string(id), title, genre, to_string(price), to_string(count) })[0];
+	return (vector<string> {to_string(id), title, genre, to_string(price), to_string(count) });
 }
 
-string* Account::ToArray()
+vector<string> Account::ToArray()
 {  
-	return &(vector<string> { name, id, password, phone_number, address, join(invoice_id_list) })[0];
+	string invoice_w_slash;
+	for (size_t i = 0; i < invoice_id_list.size(); i++) {
+		invoice_w_slash += to_string(invoice_id_list[i]);
+		if (i < invoice_id_list.size() - 1)
+			invoice_w_slash += "/";
+	}
+	return (vector<string> { name, id, password, phone_number, address, invoice_w_slash });
 }
 
-string* Invoice::ToArray()
+vector<string> Invoice::ToArray()
 {  
-	return &(vector<string> { to_string(id), buyer_id, recipient_phone_number, recipient_address, date, to_string(product_id), to_string(product_count) })[0];
+	return (vector<string> { to_string(id), buyer_id, recipient_phone_number, recipient_address, date, to_string(product_id), to_string(product_count) });
 }

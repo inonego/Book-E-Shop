@@ -16,6 +16,7 @@ public:
 	static void Run();
 
 	static void LoadCSV();
+	static void SaveCSV();
 	static void SetCommand();
 	static void SetParser();
 	static void SetMenu();

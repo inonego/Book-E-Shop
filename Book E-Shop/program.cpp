@@ -41,6 +41,28 @@ void Program::LoadCSV()
 	}
 }
 
+void Program::SaveCSV() {
+	vector<vector<string>>raw_data;
+	for (size_t i = 0; i < shop_manager.GetProdcutList().size(); i++) {
+		raw_data.push_back(shop_manager.GetProdcutList()[i]->ToArray());
+	}
+	data_manager.SaveCSV("./data/product.csv", raw_data, 5);
+
+	raw_data.clear();
+
+	for (size_t i = 0; i < shop_manager.GetAccountList().size(); i++) {
+		raw_data.push_back(shop_manager.GetAccountList()[i]->ToArray());
+	}
+	data_manager.SaveCSV("./data/account.csv", raw_data, 6);
+
+	raw_data.clear();
+
+	for (size_t i = 0; i < shop_manager.GetInvoiceList().size(); i++) {
+		raw_data.push_back(shop_manager.GetInvoiceList()[i]->ToArray());
+	}
+	data_manager.SaveCSV("./data/invoice.csv", raw_data, 7);
+}
+
 void Program::SetCommand()
 {
 	menu_manager.AppendCommand('z', new MenuManager::Command("뒤로가기", [&]() {
@@ -202,6 +224,7 @@ void Program::SetMenu()
 		string input = IO.input();
 
 		if (input == "y") {
+			SaveCSV();
 			exit(0);
 		}
 		}));
