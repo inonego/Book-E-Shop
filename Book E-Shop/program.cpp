@@ -44,8 +44,8 @@ void Program::LoadCSV()
 
 void Program::SaveCSV() {
 	vector<vector<string>>raw_data;
-	for (size_t i = 0; i < shop_manager.GetProdcutList().size(); i++) {
-		raw_data.push_back(shop_manager.GetProdcutList()[i]->ToArray());
+	for (size_t i = 0; i < shop_manager.GetProductList().size(); i++) {
+		raw_data.push_back(shop_manager.GetProductList()[i]->ToArray());
 	}
 	data_manager.SaveCSV("./data/product.csv", raw_data, 5);
 
@@ -192,7 +192,7 @@ void Program::SetParser()
 	// 주문 처리 정보 상품 수량
 	data_manager.AppendParser("invoice_product_count", (new Parser())
 		->set_label("상품 수량")
-		->set_regex(R"(^[1-9]*$)")
+		->set_regex(R"(^[1-9][0-9]*$)")
 		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다,")
 	);
 #pragma endregion
@@ -524,7 +524,7 @@ void Program::SetMenu()
 					menu_manager.RunMenu(MENU_A_PRODUCT_INFO_M, target);
 				}
 				else if (input == "R") {
-					//IO.print("제거");
+					menu_manager.RunMenu(MENU_A_PRODUCT_INFO_R, target);
 				}
 				else {
 					IO.print("일치하는 명령어가 없음.\n");
@@ -575,11 +575,19 @@ void Program::SetMenu()
 	));
 
 	// 상품 등록 정보 제거 메뉴화면
-	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO_R, new Menu(
-		[&](MenuIO& IO) {
+	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO_R, new Menu<Product*>(
+		[&](MenuIO& IO, Product* target) {
 			menu_manager.PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ 상품 등록 정보 제거 ]");
+			string input = IO.input("상품 등록 정보를 제거하시겠습니까?(y/n)");
+			if (input == "y") {
+				IO.print(format("\n상품({0})의 등록 정보가 제거되었습니다.\n", target->id));
+				shop_manager.RemoveProduct(target->id);
+				IO.pause();
+
+				menu_manager.RunMenu(MENU_A_PRODUCT_LIST, shop_manager.GetProductList());
+			}
 
 		}
 	));
@@ -779,16 +787,68 @@ void Program::SetMenu()
 		TemplateTable<Product*> _template;
 		_template.SetName("상품 목록");
 		_template.header_func = []() -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", "ID", "상품", "장르", "가격", "재고");
+			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", "ID", "상품", "장르", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<16}{4:<8}", product->id, limit(product->title, 18), product->genre, product->price, product->count);
+			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", product->id, limit(product->title, 18), product->genre, to_string(product->price) + "원", product->count);
 		};
-		_template.SubMenu('p', "상품 검색 및 장르 선택", []() { menu_manager.RunMenu(MENU_B_PRODUCT_SEARCH); });
+		_template.SubMenu('p', "상품 검색 및 장르 선택", []() {
+			set<string> genre_set;
+
+			vector<Product*>& product_list = shop_manager.GetProductList();
+
+			for (int i = 0; i < product_list.size(); i++) {
+				Product* product = product_list[i];
+
+				genre_set.insert(product->genre);
+			}
+
+			vector<string> genre_list(genre_set.begin(), genre_set.end());
+
+			for (int i = 0; i < genre_list.size(); i += 10) {
+				genre_list.insert(genre_list.begin() + i, "전체");
+			}
+
+			menu_manager.RunMenu(MENU_B_PRODUCT_SEARCH, genre_list);
+			});
 
 		_template.next_menu_code = MENU_B_PRODUCT_INFO;
 
 		_template.Apply(MENU_B_PRODUCT_LIST);
+	}
+
+	// 상품 검색 및 장르 선택 메뉴화면
+	{
+		TemplateTable<string> _template;
+		_template.SetName("상품 검색 및 장르 선택");
+		_template.header_func = []() -> string {
+			return "장르";
+		};
+		_template.show_func = [](string genre) -> string {
+			return genre;
+		};
+
+		_template.next_menu_code = MENU_B_PRODUCT_LIST;
+
+		_template.process_func = [&](MenuIO& IO, MenuCode next_menu_code, string genre) {
+			string input = IO.input("", "제목");
+
+			vector<Product*>& product_list = shop_manager.GetProductList();
+
+			vector<Product*> result;
+
+			for (int i = 0; i < product_list.size(); i++) {
+				Product* product = product_list[i];
+
+				if ((input == "" || product->title == input) && (genre == "전체" || product->genre == genre)) {
+					result.push_back(product);
+				}
+			}
+
+			menu_manager.RunMenu(next_menu_code, result);
+		};
+
+		_template.Apply(MENU_B_PRODUCT_SEARCH);
 	}
 
 	// 상품 상세 정보 확인 메뉴화면
@@ -833,7 +893,7 @@ void Program::SetMenu()
 			menu_manager.PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ 상품 구매 ]");
-
+			int count;
 			string input;
 			Account* user = shop_manager.GetUser();
 			vector<string> invoice = { user->id,user->phone_number,user->address, "23.10.29", to_string(target->id)};
@@ -851,8 +911,12 @@ void Program::SetMenu()
 				if (data_manager.GetParser("invoice_product_count")->Check(input)) {
 					if (target->count >= stoi(input))
 					{
+						count = stoi(input);
 						invoice.push_back(input);
 						break;
+					}
+					else {
+						IO.print("주문 수량을 초과했습니다\n");
 					}
 				}
 				IO.print(data_manager.GetParser("invoice_product_count")->msg_error);
@@ -871,6 +935,7 @@ void Program::SetMenu()
 			input = IO.input("상품을 주문하시겠습니까?(y/n)");
 			if (input == "y") {
 				int id = 7 + shop_manager.GetInvoiceList().size(); //id 생성 매커니즘??
+				target->count -= count; //제품 개수 업데이트
 				invoice.insert(invoice.begin(), to_string(id));
 				shop_manager.AddInvoice(new Invoice(invoice));
 				user->invoice_id_list.push_back(id);

@@ -42,6 +42,12 @@ public:
 		return (invoice != invoice_list.end()) ? (*invoice) : nullptr;
 	};
 
+	void RemoveProduct(int id) {
+		auto product = find_if(product_list.begin(), product_list.end(), [&](Product* element) -> bool { return element->id == id; });
+
+		product_list.erase(product);
+	};
+
 	vector<Product*>& GetProductList() { return product_list; }
 	vector<Account*>& GetAccountList() { return account_list; }
 	vector<Invoice*>& GetInvoiceList() { return invoice_list; }
