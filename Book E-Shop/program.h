@@ -8,11 +8,11 @@
 
 class Program
 {
-public:
+private:
 	static DataManager data_manager;
 	static MenuManager menu_manager;
-	static ShopManager shop_manager; 
-
+	static ShopManager shop_manager;
+public:
 	static void Run();
 
 	static void LoadCSV();
@@ -54,7 +54,7 @@ public:
 		vector<pair<string, action>> menu; 
 	public:   
 		void SubMenu(string text, action func) {
-			menu.push_back(make_pair(text, func));
+			menu.push_back(make_pair(text, func)); 
 		}
 
 		void Apply(MenuCode menu_code) override {

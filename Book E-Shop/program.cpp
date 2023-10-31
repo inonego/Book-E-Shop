@@ -378,9 +378,9 @@ void Program::SetMenu()
 			
 				IO.print("\n계정이 생성되었습니다.\n");
 				IO.pause();
-
-				
 			}
+			 
+			menu_manager.RunMenu(MENU_START);
 		}
 	));
 #pragma endregion
@@ -401,12 +401,16 @@ void Program::SetMenu()
 	{
 		TemplateTable<Product*> _template;
 		_template.SetName("상품 목록");
+
+		// 테이블 출력 형식 지정 
 		_template.header_func = []() -> string {
 			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", "ID", "상품", "장르", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
 			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", product->id, limit(product->title, 18), product->genre, to_string(product->price) + "원", product->count);
 		}; 
+
+		// 메뉴 추가 및 기능
 		_template.SubMenu('p', "상품 검색 및 장르 선택", []() {
 			set<string> genre_set;
 
@@ -418,7 +422,7 @@ void Program::SetMenu()
 				genre_set.insert(product->genre);
 			}
 
-			vector<string> genre_list(genre_set.begin(), genre_set.end());
+			static vector<string> genre_list; genre_list = vector<string>(genre_set.begin(), genre_set.end());
 
 			for (int i = 0; i < genre_list.size(); i += 10) {
 				genre_list.insert(genre_list.begin() + i, "전체");
@@ -452,7 +456,7 @@ void Program::SetMenu()
 
 			vector<Product*>& product_list = shop_manager.GetProductList();
 
-			vector<Product*> result;
+			static vector<Product*> result; result.clear();
 
 			for (int i = 0; i < product_list.size(); i++) {
 				Product* product = product_list[i];
@@ -479,8 +483,8 @@ void Program::SetMenu()
 
 			vector<string> parser_key = { "product_title", "product_genre", "product_price", "product_count" };
 			
-			int id = 7 + shop_manager.GetProductList().size();
-			//id 생성 매커니즘??
+			int id = shop_manager.GetProductList().size();
+
 			product.push_back(to_string(id));
 
 			for (int i = 0; i < parser_key.size(); i++) {
@@ -495,8 +499,13 @@ void Program::SetMenu()
 				
 				IO.print(format("\n상품({})이 등록되었습니다.\n", id));
 				IO.pause();
+
+				// 상품을 등록한 경우 이전 메뉴로 돌아가 전체 상품 등록 정보를 보여줍니다.
+				menu_manager.RunMenu(MENU_A_PRODUCT_LIST, shop_manager.GetProductList());
 			}
-		}
+
+			// 상품을 등록하지 않은 경우 이전 검색 상태를 유지하면서 이전 메뉴를 보여줍니다.
+		} 
 	));
 
 	// 상품 등록 정보 메뉴화면
@@ -514,7 +523,7 @@ void Program::SetMenu()
 
 			IO.print_line();
 
-			IO.print_aligned_center("수정(M) 제거(R)\n");
+			IO.print_aligned_center("수정(M)     제거(R)");
 
 			IO.print_line();
 
@@ -523,57 +532,71 @@ void Program::SetMenu()
 			while (true) {
 				string input = IO.input();
 
-				if (input == "M") {
-					menu_manager.RunMenu(MENU_A_PRODUCT_INFO_M, target);
-				}
-				else if (input == "R") {
-					menu_manager.RunMenu(MENU_A_PRODUCT_INFO_R, target);
-				}
-				else {
-					IO.print("일치하는 명령어가 없음.\n");
-					IO.pause();
+				if (input.size() == 1) {
+					char command = tolower(input[0]);
 
-					IO.rollback(checkpoint);
-				}
+					if (command == 'm') {
+						menu_manager.RunMenu(MENU_A_PRODUCT_INFO_M, target);
+					}
+					else if (command == 'r') { 
+						menu_manager.RunMenu(MENU_A_PRODUCT_INFO_R, target);
+					}
+				} 
+
+				IO.print("메뉴에 표시된 알파벳 중 하나를 고르세요.\n");
+				IO.pause();
+
+				IO.rollback(checkpoint);
 			}
 		}
 	));
 
 	// 상품 등록 정보 수정 메뉴화면
 	menu_manager.AppendMenu(MENU_A_PRODUCT_INFO_M, new Menu<Product*>(
-		[&](MenuIO& IO,Product* target)  {
+		[&](MenuIO& IO, Product* target)  {
 			menu_manager.PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ 상품 등록 정보 수정 ]");
 
-			auto checkpoint = IO.checkpoint();
-			vector<string> product;
-			string input;
-			vector<string> heads = { "제목","장르","가격","재고" };
-			vector<string> regex_t = { "product_title","product_genre","product_price","product_count" };
-			int t = 0;
-			while (t < heads.size()) {
-				checkpoint = IO.checkpoint();
-				input = IO.input("", heads[t]);
-				if (data_manager.GetParser(regex_t[t])->Check(input) || input._Equal("")) {
-					product.push_back(input);
-					t++;
-				}
-				else
-				{
-					IO.print(data_manager.GetParser(regex_t[t])->msg_error);
-					IO.pause();
-					IO.rollback(checkpoint);
-				}
+			vector<string> product = target->ToArray();
+
+			vector<string> parser_key = { "product_title","product_genre","product_price","product_count" };
+
+			for (int i = 0; i < parser_key.size(); i++) { 
+				auto checkpoint = IO.checkpoint();
+
+				while (true) { 
+					Parser* parser = data_manager.GetParser(parser_key[i]);
+
+					string input = IO.input("", parser->label);
+					if (input == "" || parser->Check(input)) { 
+						if (product[i] != "") {
+							product[i] = input;
+						}
+
+						break;
+					}
+					else
+					{
+						IO.print(parser->msg_error);
+						IO.pause();
+
+						IO.rollback(checkpoint);
+					}
+				} 
 			}
-			input = IO.input("상품 등록 정보를 수정하시겠습니까?(y/n)", "");
+
+			string input = IO.input("상품 등록 정보를 수정하시겠습니까? (y / n)", "");
+
 			if (input == "y") {
-				target->title = product[0]._Equal("") ? target->title : product[0];
-				target->genre = product[1]._Equal("") ? target->genre : product[1];
-				target->price = product[2]._Equal("") ? target->price : stoi(product[2]);
-				target->count = product[3]._Equal("") ? target->count : stoi(product[3]);
+				*target = Product(product);
+
+				IO.print(format("상품({})의 등록 정보가 수정되었습니다.", target->id));
+
 				IO.pause();
-			} 
+			}
+
+			menu_manager.RunMenu(MENU_A_PRODUCT_INFO, target);
 		}
 	));
 
@@ -591,7 +614,6 @@ void Program::SetMenu()
 
 				menu_manager.RunMenu(MENU_A_PRODUCT_LIST, shop_manager.GetProductList());
 			}
-
 		}
 	));
 	#pragma endregion 
@@ -638,7 +660,7 @@ void Program::SetMenu()
 
 			IO.print_line();
 
-			IO.print("주문 처리 정보(O) 수정(M)\n");
+			IO.print("주문 처리 정보(O)     수정(M)");
 
 			IO.print_line();
 

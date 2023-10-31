@@ -87,7 +87,7 @@ public:
 
 	// 실행중인 메뉴에서 재귀적으로 새로운 메뉴화면을 실행합니다.
 	template<typename ...TP>
-	void RunRecursiveMenu(MenuCode menu_code, TP&& ...args);
+	void RunRecursiveMenu(MenuCode menu_code, TP&&... args);
 
 	void RunPreviousMenu();
 }; 

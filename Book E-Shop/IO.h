@@ -93,11 +93,11 @@ inline T MenuIO::input(Parser* parser)
 				return input;
 			}
 			else if constexpr (is_same_v<T, char>) {
-				if (input.size() > 0) {
+				if (input.size() == 1) {
 					return input[0];
 				} 
 				else {
-					throw invalid_argument("빈 문자열은 문자로 변환할 수 없습니다!");
+					throw invalid_argument("문자의 형식이 올바르지 않습니다!");
 				}
 			}
 			else if constexpr (is_same_v<T, int>) {

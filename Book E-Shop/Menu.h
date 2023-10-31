@@ -79,7 +79,9 @@ inline IMenu* IMenu::SetArgs(TP&& ...args)
 		exit(300);
 	}
 
-	this->run_func = bind(menu->run_func, std::placeholders::_1, forward<TP>(args)...);
+	this->run_func = bind(menu->run_func, placeholders::_1, forward<TP>(args)...);
+
+	//this->run_func = [&, menu](MenuIO& IO) { menu->run_func(IO, forward<TP>(args)...); };
 
 	return this;
 }

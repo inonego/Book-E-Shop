@@ -14,7 +14,6 @@ private:
 	Account* admin = new Account("admin", "password");
 	Account* current_user;
 public:
-
 	Account* Login(string id, string password);
 	void Logout(); 
 
