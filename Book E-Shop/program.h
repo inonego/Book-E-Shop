@@ -156,7 +156,7 @@ public:
 
 					IO.print_line(false);
 
-					int max_page = ((int)v.size() / setting.max_count) + 1; 
+					int max_page = ((max((int)v.size() - 1, 0)) / setting.max_count) + 1; 
 
 					IO.print_aligned_center(format("{0} / {1}\n", page + 1, max_page));
 					IO.print(format("{0:<{2}}{1:>{2}}\n", "< (B) 이전 페이지", "(N)다음 페이지 >", IO.width / 2));

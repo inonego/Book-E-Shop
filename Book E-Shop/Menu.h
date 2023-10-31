@@ -47,7 +47,7 @@ public:
 	IMenu() {}
 
 	template<typename... TP>
-	IMenu* SetArgs(TP... v);
+	IMenu* SetArgs(TP&&... v);
 
 	void Run(MenuIO& IO) {
 		run_func(IO);
@@ -67,7 +67,7 @@ public:
 };
 
 template<typename ...TP>
-inline IMenu* IMenu::SetArgs(TP ...args)
+inline IMenu* IMenu::SetArgs(TP&& ...args)
 {
 	using Menu = Menu<TP...>;
 
@@ -79,7 +79,7 @@ inline IMenu* IMenu::SetArgs(TP ...args)
 		exit(300);
 	}
 
-	this->run_func = bind(menu->run_func, std::placeholders::_1, args...);
+	this->run_func = bind(menu->run_func, std::placeholders::_1, forward<TP>(args)...);
 
 	return this;
 }

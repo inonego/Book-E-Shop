@@ -58,23 +58,27 @@ vector<vector<string>> DataManager::ParseCSV(string path)
     return result;
 }
 
-void DataManager::SaveCSV(string path, vector<vector<string>> data, int size) {
-    std::ofstream file(path);
+void DataManager::SaveCSV(string path, vector<vector<string>> data) {
+    ofstream file(path);
+
     if (file.is_open()) {
         for (const std::vector<std::string>& row : data) {
             for (size_t i = 0; i < row.size(); ++i) {
                 file << row[i];
+
                 if (i < row.size() - 1) {
                     file << ",";
                 }
             }
             file << "\n";
         }
+
         file.close();
-        std::cout << "Successfully Save" << std::endl;
+
+        cout << "파일을 성공적으로 저장했습니다." << std::endl;
     }
     else {
-        std::cerr << "file is not Opened" << std::endl;
+        cerr << "파일을 열 수 없습니다." << std::endl;
     }
 
 }
