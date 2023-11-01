@@ -9,10 +9,12 @@
 class Program
 {
 private:
-	static DataManager data_manager;
-	static MenuManager menu_manager;
-	static ShopManager shop_manager;
+	static DataManager* const data_manager;
+	static MenuManager* const menu_manager;
+	static ShopManager* const shop_manager;
 public:
+	static void CleanUp();
+
 	static void Run();
 
 	static void LoadCSV();
@@ -58,11 +60,11 @@ public:
 		}
 
 		void Apply(MenuCode menu_code) override {
-			auto func = [&, k = *this](MenuIO& IO) {
+			auto func = [=, k = *this](MenuIO& IO) {
 				TemplateMenuSelection setting = k;
 
-				if (setting.command_toggled) menu_manager.ToggleCommand(setting.command_availability);
-				menu_manager.PrintCommand();
+				if (setting.command_toggled) menu_manager->ToggleCommand(setting.command_availability);
+				menu_manager->PrintCommand();
 				IO.print_line(); 
 				IO.print_aligned_center(format("[ {} ]", setting.name));
 
@@ -77,7 +79,7 @@ public:
 				auto checkpoint = IO.checkpoint();
 
 				while (true) {
-					index = IO.input<int>(data_manager.GetParser("MENU_MENUSELECTION"));
+					index = IO.input<int>(data_manager->GetParser("MENU_MENUSELECTION"));
 
 					if (1 <= index && index <= setting.menu.size()) {
 						(setting.menu[index - 1].second)();
@@ -91,7 +93,7 @@ public:
 				}
 			};
 
-			menu_manager.AppendMenu(menu_code, new Menu(func));
+			menu_manager->AppendMenu(menu_code, new Menu(func));
 		}
 	};
 
@@ -114,11 +116,11 @@ public:
 		}
 
 		void Apply(MenuCode menu_code) override {
-			auto func = [&, k = *this](MenuIO& IO, vector<T>& v) {
+			auto func = [=, k = *this](MenuIO& IO, vector<T>&& v) {
 				TemplateTable<T> setting = k;
 
-				if (setting.command_toggled) menu_manager.ToggleCommand(setting.command_availability);
-				menu_manager.PrintCommand();
+				if (setting.command_toggled) menu_manager->ToggleCommand(setting.command_availability);
+				menu_manager->PrintCommand();
 				IO.print_line();
 				IO.print_aligned_center(format("[ {} ]", setting.name));
 
@@ -163,7 +165,7 @@ public:
 
 					IO.print_line();
 
-					char input = IO.input<char>(data_manager.GetParser("MENU_TABLE"));
+					char input = IO.input<char>(data_manager->GetParser("MENU_TABLE"));
 					
 					input = tolower(input);
 
@@ -194,7 +196,7 @@ public:
 								}
 								else {
 									// 처리하는 함수가 존재하지 않으면 선택한 요소를 다음 메뉴로 넘깁니다.
-									menu_manager.RunMenu(setting.next_menu_code, v[n]);
+									menu_manager->RunMenu(setting.next_menu_code, v[n]);
 								}
 							}
 						 } 
@@ -211,7 +213,7 @@ public:
 				}   
 			};
 
-			menu_manager.AppendMenu(menu_code, new Menu<vector<T>&>(func));
+			menu_manager->AppendMenu(menu_code, new Menu<vector<T>&&>(func));
 		}
 	};
 };

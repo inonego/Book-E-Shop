@@ -47,7 +47,7 @@ public:
 	IMenu() {}
 
 	template<typename... TP>
-	IMenu* SetArgs(TP&&... v);
+	IMenu* SetArgs(TP&&... args);
 
 	void Run(MenuIO& IO) {
 		run_func(IO);
@@ -79,9 +79,8 @@ inline IMenu* IMenu::SetArgs(TP&& ...args)
 		exit(300);
 	}
 
-	this->run_func = bind(menu->run_func, placeholders::_1, forward<TP>(args)...);
-
 	//this->run_func = [&, menu](MenuIO& IO) { menu->run_func(IO, forward<TP>(args)...); };
+	this->run_func = [...captured = forward<TP>(args), menu](MenuIO& IO) mutable { menu->run_func(IO, forward<TP>(captured)...); };   
 
 	return this;
 }

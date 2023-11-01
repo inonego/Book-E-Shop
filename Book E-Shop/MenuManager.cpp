@@ -8,7 +8,7 @@
 
 MenuManager::MenuManager()
 	:
-	IO(MenuIO([&](MenuIO& IO, string input) -> bool {
+	IO(MenuIO([=](MenuIO& IO, string input) -> bool {
 		// 명령어 처리
 		if (!input.empty() && input[0] == ':') {
 			input.erase(0, 1);
