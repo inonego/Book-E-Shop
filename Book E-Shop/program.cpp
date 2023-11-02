@@ -856,7 +856,8 @@ void Program::SetMenu()
 			IO.print(format("고유 번호 : {0}\n", product->id));
 			IO.print(format("제목 : {0}\n", product->title));
 			IO.print(format("장르 : {0}\n", product->genre));
-			IO.print(format("가격 : {0}\n", product->price));
+			IO.print(format("저자 : {0}\n", product->author));
+			IO.print(format("가격 : {0}원\n", product->price));
 
 			IO.print("\n[ 주문자 정보 ]\n");
 			IO.print(format("아이디 : {0}\n", account->id));
@@ -867,7 +868,12 @@ void Program::SetMenu()
 			IO.print("\n");
 			IO.print(format("상품 고유 번호 : {0}\n", target->product_id));
 			IO.print(format("상품 수량 : {0}\n", target->product_count));
-			IO.print(format("결제 금액 : {0}\n", product->price * target->product_count));
+			IO.print(format("결제 금액 : {0}원\n", target->price));
+			IO.print(format("사용한 3000원 쿠폰 개수 : {0}개\n", target->coupon_count));
+			IO.print(format("최종 결제 금액 : {0}원\n", target->final_price));
+			IO.print("\n");
+			IO.print(format("상태 : {0}\n", target->GetState()));
+
 
 			//메뉴 분할
 			if (shop_manager->IsAdmin() && target->state != PURCHASED) {
@@ -995,6 +1001,7 @@ void Program::SetMenu()
 			IO.print(format("고유번호 : {0}\n", target->id));
 			IO.print(format("제목 : {0}\n", target->title));
 			IO.print(format("장르 : {0}\n", target->genre));
+			IO.print(format("저자 : {0}\n", target->author));
 			IO.print(format("가격 : {0}\n", target->price));
 			IO.print(format("재고 : {0}\n", target->count));
 

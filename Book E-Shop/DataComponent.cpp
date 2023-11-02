@@ -25,7 +25,7 @@ Product::Product(vector<string> data)
 	author = data[3];
 	price = stoi(data[4]);
 	count = stoi(data[5]);
-	deleted = data[6] == "TRUE";
+	deleted = data[6]._Equal("TRUE");
 };
 
 string Product::GetKey()
