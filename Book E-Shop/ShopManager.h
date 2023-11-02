@@ -6,7 +6,9 @@ using namespace std;
 
 class ShopManager
 {
-private:
+private: 
+	vector<Product*> live_product_list;
+
 	vector<Product*> product_list;
 	vector<Account*> account_list;
 	vector<Invoice*> invoice_list;
@@ -17,17 +19,16 @@ public:
 	Account* Login(string id, string password);
 	void Logout(); 
 
-	Account* const GetCurrentAccount() { return current_user; }
-	const Account* const GetAdminAccount() { return admin; }
-	
-	void AddProduct(Product* product) { product_list.push_back(product); }
-	void AddAccount(Account* account) { account_list.push_back(account); }
-	void AddInvoice(Invoice* invoice) { invoice_list.push_back(invoice); }
+	const bool IsAdmin() { return current_user->id == admin->id; }
+	Account* GetCurrentAccount() { return current_user; } 
+	const Account* const GetAdminAccount() { return admin; } 
 
-	Product* GetProduct(int id) {
-		auto product = find_if(product_list.begin(), product_list.end(), [=](Product* element) -> bool { return element->id == id; });
+	Product* GetProduct(int id, bool all = false) {
+		auto& list = all ? product_list : live_product_list;
 
-		return (product != product_list.end()) ? (*product) : nullptr;
+		auto product = find_if(list.begin(), list.end(), [=](Product* element) -> bool { return element->id == id; });
+
+		return (product != list.end()) ? (*product) : nullptr;
 	};
 
 	Account* GetAccount(string id) {
@@ -40,25 +41,30 @@ public:
 		auto invoice = find_if(invoice_list.begin(), invoice_list.end(), [=](Invoice* element) -> bool { return element->id == id; });
 
 		return (invoice != invoice_list.end()) ? (*invoice) : nullptr;
+	}; 
+
+
+	void EnableProduct(Product* product) {
+		if (product != nullptr) { 
+			product->deleted = false;
+
+			if(find(live_product_list.begin(), live_product_list.end(), product) == live_product_list.end()) live_product_list.push_back(product);
+		}
 	};
+	void DisableProduct(Product* product) { 
+		if (product != nullptr) {
+			product->deleted = true;
+			product->count = 0;
 
-	void RemoveProduct(int id) {
-		auto product = find_if(product_list.begin(), product_list.end(), [=](Product* element) -> bool { return element->id == id; });
+			live_product_list.erase(remove(live_product_list.begin(), live_product_list.end(), product), live_product_list.end());
+		}
+	}
 
-		product_list.erase(product);
-	};
+	void AddProduct(Product* product) { product_list.push_back(product); };
+	void AddAccount(Account* account) { account_list.push_back(account); }
+	void AddInvoice(Invoice* invoice) { invoice_list.push_back(invoice); }
 
-	void RemoveInvoice(int id) {
-		auto invoice = find_if(invoice_list.begin(), invoice_list.end(), [=](Invoice* element) -> bool { return element->id == id; });
-
-		invoice_list.erase(invoice);
-	};
-
-	vector<Product*>& GetProductList() { return product_list; }
-	vector<Account*>& GetAccountList() { return account_list; }
-	vector<Invoice*>& GetInvoiceList() { return invoice_list; }
-
-	Account* GetUser() { return current_user; }
-
-	bool IsAdmin() { return current_user->id._Equal(admin->id); }
+	const vector<Product*>& GetProductList(bool all = false) { return all ? product_list : live_product_list; }
+	const vector<Account*>& GetAccountList() { return account_list; }
+	const vector<Invoice*>& GetInvoiceList() { return invoice_list; }
 };
