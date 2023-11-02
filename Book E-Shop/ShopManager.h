@@ -48,9 +48,17 @@ public:
 		product_list.erase(product);
 	};
 
+	void RemoveInvoice(int id) {
+		auto invoice = find_if(invoice_list.begin(), invoice_list.end(), [=](Invoice* element) -> bool { return element->id == id; });
+
+		invoice_list.erase(invoice);
+	};
+
 	vector<Product*>& GetProductList() { return product_list; }
 	vector<Account*>& GetAccountList() { return account_list; }
 	vector<Invoice*>& GetInvoiceList() { return invoice_list; }
 
 	Account* GetUser() { return current_user; }
+
+	bool IsAdmin() { return current_user->id._Equal(admin->id); }
 };
