@@ -377,8 +377,7 @@ void Program::SetMenu()
 			//주문 처리 정보 목록
 			account.push_back("");
 
-			IO.print("\n계정을 생성하시겠습니까? (y / n)\n");
-			string input = IO.input();
+			string input = IO.input("\n계정을 생성하시겠습니까? (y / n)");
 
 			if (input == "y") {
 				shop_manager->AddAccount(new Account(account));
@@ -498,8 +497,7 @@ void Program::SetMenu()
 				product.push_back(IO.input(data_manager->GetParser(parser_key[i])));
 			}
 
-			IO.print("\n상품을 등록하시겠습니까? (y / n)\n");
-			string input = IO.input();
+			string input = IO.input("\n상품을 등록하시겠습니까? (y / n)");
 
 			if (input == "y") {
 				shop_manager->AddProduct(new Product(product));
@@ -593,7 +591,7 @@ void Program::SetMenu()
 				} 
 			}
 
-			string input = IO.input("상품 등록 정보를 수정하시겠습니까? (y / n)", "");
+			string input = IO.input("상품 등록 정보를 수정하시겠습니까? (y / n)");
 
 			if (input == "y") {
 				*target = Product(product);
@@ -613,10 +611,13 @@ void Program::SetMenu()
 			menu_manager->PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ 상품 등록 정보 제거 ]");
+
 			string input = IO.input("상품 등록 정보를 제거하시겠습니까? (y / n)");
+
 			if (input == "y") {
-				IO.print(format("\n상품({0})의 등록 정보가 제거되었습니다.\n", target->id));
 				shop_manager->RemoveProduct(target->id);
+
+				IO.print(format("\n상품({0})의 등록 정보가 제거되었습니다.\n", target->id));
 				IO.pause();
 
 				menu_manager->RunMenu(MENU_A_PRODUCT_LIST, shop_manager->GetProductList());
@@ -638,7 +639,7 @@ void Program::SetMenu()
 		};
 		_template.SubMenu('p', "고객 검색", [=]() { menu_manager->RunMenu(MENU_A_PRODUCT_SEARCH);  });
 
-		_template.next_menu_code = MENU_A_ACCOUNT_INFO;
+		_template.next_menu_code = MENU_ACCOUNT_INFO;
 
 		_template.Apply(MENU_A_ACCOUNT_LIST);
 	}
@@ -654,7 +655,7 @@ void Program::SetMenu()
 	));
 	
 	// 고객 계정 정보 메뉴화면
-	menu_manager->AppendMenu(MENU_A_ACCOUNT_INFO, new Menu<Account*>(
+	menu_manager->AppendMenu(MENU_ACCOUNT_INFO, new Menu<Account*>(
 		[=](MenuIO& IO, Account* target) {
 			menu_manager->PrintCommand();
 			IO.print_line();
@@ -676,71 +677,79 @@ void Program::SetMenu()
 			while (true) {
 				string input = IO.input();
 
-				if (input == "O") {
-					menu_manager->RunMenu(MENU_A_INVOICE_LIST, target->invoice_id_list);
-				}
-				else if (input == "M") {
-					menu_manager->RunMenu(MENU_A_ACCOUNT_INFO_M, target);
-				}
-				else {
-					IO.print("일치하는 명령어가 없음.\n");
-					IO.pause();
+				if (input.size() == 1) {
+					char command = tolower(input[0]);
 
-					IO.rollback(checkpoint);
+					if (command == 'o') {
+						menu_manager->RunMenu(MENU_INVOICE_LIST, target);
+					}
+					else if (command == 'm') {
+						menu_manager->RunMenu(MENU_ACCOUNT_INFO_M, target);
+					}
 				}
+
+				IO.print("메뉴에 표시된 알파벳 중 하나를 고르세요.\n");
+				IO.pause();
+
+				IO.rollback(checkpoint);
 			}
-
 		}
 	));
 
 	// 고객 계정 정보 수정 메뉴화면
-	menu_manager->AppendMenu(MENU_A_ACCOUNT_INFO_M, new Menu<Account*>(
+	menu_manager->AppendMenu(MENU_ACCOUNT_INFO_M, new Menu<Account*>(
 		[=](MenuIO& IO, Account* target) {
 			menu_manager->PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ 고객 계정 정보 수정 ]");
 
-			auto checkpoint = IO.checkpoint();
+			vector<string> orignal = target->ToArray();
+
 			vector<string> account;
-			string input, match_p;
-			vector<string> heads = { "비밀번호","비밀번호 확인","전화번호","주소" };
-			vector<string> regex_t = { "account_password","","account_phonenumber","account_address" };
-			int t = 0;
-			while (t < heads.size()) {
-				if (t != 1) {
-					checkpoint = IO.checkpoint();
-					input = IO.input("", heads[t]);
-					if (data_manager->GetParser(regex_t[t])->Check(input) || input._Equal("")) {
-						account.push_back(input);
-						t++;
-					}
-					else
-					{
-						IO.print(data_manager->GetParser(regex_t[t])->msg_error);
-						IO.pause();
-						IO.rollback(checkpoint);
+
+			vector<string> parser_key = { "account_password","","account_phonenumber","account_address" };
+
+			account.push_back(orignal[0]);
+			account.push_back(orignal[1]);
+
+			for (int i = 0; i < parser_key.size(); i++) {
+				if (i == 1) {
+					// '비밀번호 확인' 입력
+					auto checkpoint = IO.checkpoint();
+
+					while (true) {
+						string input = IO.input("", "비밀번호 확인");
+
+						if (input == account[2]) {
+							break;
+						}
+						else
+						{
+							IO.print("'비밀번호 확인'이 '비밀번호'와 일치하지 않습니다.\n");
+							IO.pause();
+
+							IO.rollback(checkpoint);
+						}
 					}
 				}
-				else{
-					checkpoint = IO.checkpoint();
-					match_p = IO.input("", heads[t]);
-					if (input._Equal(match_p))
-						t++;
-					else
-					{
-						IO.print("'비밀번호 확인'이 '비밀번호'와 일치하지 않습니다");
-						IO.pause();
-						IO.rollback(checkpoint);
-					}
+				else {
+					// 각각의 데이터 요소 입력에 대한 형식을 확인하고 저장합니다.
+					account.push_back(IO.input(data_manager->GetParser(parser_key[i])));
 				}
 			}
-			input = IO.input("계정 정보를 수정하시겠습니까? (y / n)", "");
+
+			account.push_back(orignal[5]);
+
+			string input = IO.input("\n계정 정보를 수정하시겠습니까? (y / n)");
+				
 			if (input == "y") {
-				target->password = account[0]._Equal("") ? target->password : account[0];
-				target->phone_number = account[1]._Equal("") ? target->phone_number : account[1];
-				target->address = account[2]._Equal("") ? target->address : account[2];
+				*target = Account(account);
+
+				IO.print("계정 정보가 수정되었습니다.\n");
 				IO.pause();
 			}
+
+			menu_manager->RunMenu(MENU_ACCOUNT_INFO, target);	
 		}
 	));
 	// 구매 내역 메뉴화면
@@ -757,13 +766,13 @@ void Program::SetMenu()
 			return format("{0:<12}{1:<20}{2:<16}", invoice->date, limit(product->title, 18), to_string(product->price * invoice->product_count) + "원");
 		};
 
-		_template.next_menu_code = MENU_A_INVOICE_INFO;
+		_template.next_menu_code = MENU_INVOICE_INFO;
 
-		_template.Apply(MENU_A_INVOICE_LIST);
+		_template.Apply(MENU_INVOICE_LIST);
 	}
 
 	// 주문 상세 정보 메뉴화면
-	menu_manager->AppendMenu(MENU_A_INVOICE_INFO, new Menu<int>(
+	menu_manager->AppendMenu(MENU_INVOICE_INFO, new Menu<int>(
 		[=](MenuIO& IO, int target_id) {
 			menu_manager->PrintCommand();
 			IO.print_line();
@@ -775,13 +784,13 @@ void Program::SetMenu()
 
 			IO.print(format("구매 날짜 : {0}\n", target->date));
 
-			IO.print("\n[상품 상세 정보]\n");
+			IO.print("\n[ 상품 상세 정보 ]\n");
 			IO.print(format("고유 번호 : {0}\n", product->id));
 			IO.print(format("제목 : {0}\n", product->title));
 			IO.print(format("장르 : {0}\n", product->genre));
 			IO.print(format("가격 : {0}\n", product->price));
 
-			IO.print("\n[주문자 정보]\n");
+			IO.print("\n[ 주문자 정보 ]\n");
 			IO.print(format("아이디 : {0}\n", account->id));
 			IO.print(format("이름 : {0}\n", account->name));
 			IO.print(format("전화번호 : {0}\n", target->recipient_phone_number));
@@ -792,11 +801,7 @@ void Program::SetMenu()
 			IO.print(format("상품 수량 : {0}\n", target->product_count));
 			IO.print(format("결제 금액 : {0}\n", product->price * target->product_count));
 			IO.print_line();
-			IO.print("아무 키나 입력하세요\n");
-
-			auto checkpoint = IO.checkpoint();
-			string input = IO.input();
-
+			IO.pause();
 		}
 	));
 	#pragma endregion
@@ -810,7 +815,7 @@ void Program::SetMenu()
 		_template.SetName("구매자 메뉴화면");
 		_template.ToggleCommand('l', 'q');
 		_template.SubMenu("상품 목록", [=]() { menu_manager->RunMenu(MENU_B_PRODUCT_LIST, shop_manager->GetProductList()); });
-		_template.SubMenu("고객 계정 정보", [=]() { menu_manager->RunMenu(MENU_B_ACCOUNT_INFO, shop_manager->GetUser()); });
+		_template.SubMenu("고객 계정 정보", [=]() { menu_manager->RunMenu(MENU_ACCOUNT_INFO, shop_manager->GetUser()); });
 		_template.Apply(MENU_BUYER);
 	}
 
@@ -974,151 +979,6 @@ void Program::SetMenu()
 				IO.pause();
 				IO.print("상품을 구매하였습니다.\n");
 			}
-		}
-	));
-
-
-	// 고객 계정 정보 관리 메뉴화면
-	menu_manager->AppendMenu(MENU_B_ACCOUNT_INFO, new Menu<Account*>(
-		[=](MenuIO& IO, Account* target) {
-			menu_manager->PrintCommand();
-			IO.print_line();
-			IO.print_aligned_center("[ 고객 계정 정보 ]");
-
-			IO.print(format("이름 : {0}\n", target->name));
-			IO.print(format("아이디 : {0}\n", target->id));
-			IO.print(format("전화번호 : {0}\n", target->phone_number));
-			IO.print(format("주소 : {0}\n", target->address));
-
-			IO.print_line();
-
-			IO.print("주문 처리 정보(O) 수정(M)\n");
-
-			IO.print_line();
-
-			auto checkpoint = IO.checkpoint();
-
-			while (true) {
-				string input = IO.input();
-
-				if (input == "O") {
-					menu_manager->RunMenu(MENU_B_INVOICE_LIST, target->invoice_id_list);
-				}
-				else if (input == "M") {
-					menu_manager->RunMenu(MENU_B_ACCOUNT_INFO_M, target);
-				}
-				else {
-					IO.print("일치하는 명령어가 없음.\n");
-					IO.pause();
-
-					IO.rollback(checkpoint);
-				}
-			}
-
-		}
-	));
-	// 고객 계정 정보 수정 메뉴화면
-	menu_manager->AppendMenu(MENU_B_ACCOUNT_INFO_M, new Menu<Account*>(
-		[=](MenuIO& IO, Account* target) {
-			menu_manager->PrintCommand();
-			IO.print_line();
-			IO.print_aligned_center("[ 고객 계정 정보 수정 ]");
-
-			auto checkpoint = IO.checkpoint();
-			vector<string> account;
-			string input, match_p;
-			vector<string> heads = { "비밀번호","비밀번호 확인","전화번호","주소" };
-			vector<string> regex_t = { "account_password","","account_phonenumber","account_address" };
-			int t = 0;
-			while (t < heads.size()) {
-				if (t != 1) {
-					checkpoint = IO.checkpoint();
-					input = IO.input("", heads[t]);
-					if (data_manager->GetParser(regex_t[t])->Check(input) || input._Equal("")) {
-						account.push_back(input);
-						t++;
-					}
-					else
-					{
-						IO.print(data_manager->GetParser(regex_t[t])->msg_error);
-						IO.pause();
-						IO.rollback(checkpoint);
-					}
-				}
-				else {
-					checkpoint = IO.checkpoint();
-					match_p = IO.input("", heads[t]);
-					if (input._Equal(match_p))
-						t++;
-					else
-					{
-						IO.print("'비밀번호 확인'이 '비밀번호'와 일치하지 않습니다.\n");
-						IO.pause();
-						IO.rollback(checkpoint);
-					}
-				}
-			}
-			input = IO.input("계정 정보를 수정하시겠습니까?(y/n)", "");
-			if (input == "y") {
-				target->password = account[0]._Equal("") ? target->password : account[0];
-				target->phone_number = account[1]._Equal("") ? target->phone_number : account[1];
-				target->address = account[2]._Equal("") ? target->address : account[2];
-				IO.pause();
-			}
-		}
-	));
-
-
-	// 구매 내역 메뉴화면
-	{
-		TemplateTable<int> _template;
-		_template.SetName("구매 내역");
-		_template.header_func = []() -> string {
-			return format("{0:<12}{1:<20}{2:<16}", "구매 날짜", "제목", "결제 금액");
-		};
-		_template.show_func = [](int id) -> string {
-			Invoice* invoice = shop_manager->GetInvoice(id);
-			Product* product = shop_manager->GetProduct(invoice->product_id);
-
-			return format("{0:<12}{1:<20}{2:<16}", invoice->date, limit(product->title, 18), to_string(product->price * invoice->product_count) + "원");
-		};
-
-		_template.next_menu_code = MENU_B_INVOICE_INFO;
-
-		_template.Apply(MENU_B_INVOICE_LIST);
-	}
-
-	// 주문 상세 정보 메뉴화면
-	menu_manager->AppendMenu(MENU_B_INVOICE_INFO, new Menu<int>(
-		[=](MenuIO& IO, int target_id) {
-			menu_manager->PrintCommand();
-			IO.print_line();
-			IO.print_aligned_center("[ 주문 상세 정보 ]");
-
-			Invoice* target = shop_manager->GetInvoice(target_id);
-			Product* product = shop_manager->GetProduct(target->product_id);
-			Account* account = shop_manager->GetAccount(target->buyer_id);
-
-			IO.print(format("구매 날짜 : {0}\n", target->date));
-
-			IO.print("\n[상품 상세 정보]\n");
-			IO.print(format("고유 번호 : {0}\n", product->id));
-			IO.print(format("제목 : {0}\n", product->title));
-			IO.print(format("장르 : {0}\n", product->genre));
-			IO.print(format("가격 : {0}\n", product->price));
-
-			IO.print("\n[주문자 정보]\n");
-			IO.print(format("아이디 : {0}\n", account->id));
-			IO.print(format("이름 : {0}\n", account->name));
-			IO.print(format("전화번호 : {0}\n", target->recipient_phone_number));
-			IO.print(format("주소 : {0}\n", target->recipient_address));
-
-			IO.print("\n");
-			IO.print(format("상품 고유 번호 : {0}\n", target->product_id));
-			IO.print(format("상품 수량 : {0}\n", target->product_count));
-			IO.print(format("결제 금액 : {0}\n", product->price * target->product_count));
-			IO.print_line();
-			IO.pause();
 		}
 	));
 
