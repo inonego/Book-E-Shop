@@ -22,9 +22,9 @@ Product::Product(vector<string> data)
 	id = stoi(data[0]);
 	title = data[1];
 	genre = data[2];
-	price = stoi(data[3]);
-	count = stoi(data[4]);
-	author = data[5];
+	author = data[3];
+	price = stoi(data[4]);
+	count = stoi(data[5]);
 	deleted = data[6] == "TRUE";
 };
 
@@ -105,6 +105,20 @@ Invoice::Invoice(vector<string> data)
 	state = (InvoiceState)stoi(data[10]);
 }
 
+string Invoice::GetState()
+{
+	switch (this->state) {
+	case PURCHASED:
+		return "구매 확정 이전";
+	case CONFIRMED:
+		return "구매 확정";
+	case REFUNDED:
+		return "반품";
+	}
+
+	return "";
+}
+
 string Invoice::GetKey()
 {
 	return to_string(id);
@@ -121,7 +135,7 @@ vector<string> Product::ToArray()
 	string author;
 	bool deleted;
 */
-	return (vector<string> { to_string(id), title, genre, to_string(price), to_string(count), author, deleted ? "TRUE" : "FALSE" });
+	return (vector<string> { to_string(id), title, genre, author, to_string(price), to_string(count), deleted ? "TRUE" : "FALSE" });
 }
 
 vector<string> Account::ToArray()

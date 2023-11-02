@@ -32,9 +32,9 @@ public:
 	int id;
 	string title;
 	string genre;
+	string author;
 	int price;
 	int count;
-	string author;
 	bool deleted;
 
 	virtual string GetKey() override;
@@ -86,6 +86,8 @@ public:
 	int coupon_count;
 	int final_price;
 	InvoiceState state;
+
+	string GetState();
 
 	virtual string GetKey() override; 
 	virtual vector<string> ToArray() override;

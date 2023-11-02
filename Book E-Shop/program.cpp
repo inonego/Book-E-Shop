@@ -90,6 +90,7 @@ void Program::SetCommand()
 #pragma region Parser 구현
 void Program::SetParser()
 {
+
 #pragma region 상품 등록 정보 Parser
 
 	// 상품 등록 정보 고유 번호
@@ -107,6 +108,11 @@ void Program::SetParser()
 	// 상품 등록 정보 장르
 	data_manager->AppendParser("product_genre", (new Parser())
 		->set_label("장르")
+	);
+
+	// 상품 등록 정보 장르
+	data_manager->AppendParser("product_author", (new Parser())
+		->set_label("저자")
 	);
 
 	// 상품 등록 정보 가격
@@ -423,17 +429,17 @@ void Program::SetMenu()
 
 		// 테이블 출력 형식 지정 
 		_template.header_func = []() -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", "ID", "상품", "장르", "가격", "재고");
+			return format("{0:<10}{1:<20}{2:<8}{3:<8}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", product->id, limit(product->title, 18), product->genre, to_string(product->price) + "원", product->count);
-		}; 
+			return format("{0:<10}{1:<20}{2:<8}{3:<8}{4:<12}{5:<8}", product->id, limit(product->title, 18), product->genre, product->author, to_string(product->price) + "원", product->count);
+		};
 
 		// 메뉴 추가 및 기능
 		_template.SubMenu('p', "상품 검색 및 장르 선택", []() {
 			set<string> genre_set;
 
-			vector<Product*>& product_list = shop_manager->GetProductList(); 
+			const vector<Product*>& product_list = shop_manager->GetProductList(); 
 
 			for (int i = 0; i < product_list.size(); i++) {
 				Product* product = product_list[i];
@@ -473,7 +479,7 @@ void Program::SetMenu()
 		_template.process_func = [=](MenuIO& IO, MenuCode next_menu_code, string genre) {
 			string input = IO.input("", "제목");
 
-			vector<Product*>& product_list = shop_manager->GetProductList();
+			const vector<Product*>& product_list = shop_manager->GetProductList();
 
 			static vector<Product*> result; result.clear();
 
@@ -500,7 +506,7 @@ void Program::SetMenu()
 
 			vector<string> product;
 
-			vector<string> parser_key = { "product_title", "product_genre", "product_price", "product_count" };
+			vector<string> parser_key = { "product_title", "product_genre", "product_author", "product_price", "product_count" };
 			
 			int id = (int)shop_manager->GetProductList().size();
 
@@ -509,6 +515,8 @@ void Program::SetMenu()
 			for (int i = 0; i < parser_key.size(); i++) {
 				product.push_back(IO.input(data_manager->GetParser(parser_key[i])));
 			}
+
+			product.push_back("FALSE");
 
 			string input = IO.input("\n상품을 등록하시겠습니까? (y / n)");
 
@@ -536,12 +544,13 @@ void Program::SetMenu()
 			IO.print(format("고유번호 : {0}\n", target->id));
 			IO.print(format("제목 : {0}\n", target->title));
 			IO.print(format("장르 : {0}\n", target->genre));
+			IO.print(format("저자 : {0}\n", target->author));
 			IO.print(format("가격 : {0}\n", target->price));
 			IO.print(format("재고 : {0}\n", target->count));
 
 			IO.print_line();
 
-			IO.print_aligned_center("수정(M)     제거(LR)");
+			IO.print_aligned_center("수정(M)     제거(R)");
 
 			IO.print_line();
 
@@ -578,7 +587,7 @@ void Program::SetMenu()
 
 			vector<string> product = target->ToArray();
 
-			vector<string> parser_key = { "product_title","product_genre","product_price","product_count" };
+			vector<string> parser_key = { "product_title", "product_genre", "product_author", "product_price", "product_count" };
 
 			for (int i = 0; i < parser_key.size(); i++) { 
 				auto checkpoint = IO.checkpoint();
@@ -706,6 +715,11 @@ void Program::SetMenu()
 			IO.print(format("전화번호 : {0}\n", phone_number(target->phone_number)));
 			IO.print(format("주소 : {0}\n", target->address));
 
+			IO.print("\n");
+
+			IO.print(format("보유한 3000원 쿠폰 개수 : {}\n", target->coupon_count));
+			IO.print(format("다음 쿠폰까지 남은 금액 : {}원\n", target->accumulated));
+
 			IO.print_line();
 
 			IO.print_aligned_center("주문 처리 정보(O)     수정(M)");
@@ -797,13 +811,14 @@ void Program::SetMenu()
 		TemplateTable<int> _template;
 		_template.SetName("구매 내역");
 		_template.header_func = []() -> string {
-			return format("{0:<12}{1:<20}{2:<16}", "구매 날짜", "제목", "결제 금액");
+			return format("{0:<12}{1:<20}{2:<8}{3:<12}{4:<10}", "구매 날짜", "제목", "저자", "결제 금액", "상태");
 		};
 		_template.show_func = [](int id) -> string {
 			Invoice* invoice = shop_manager->GetInvoice(id);
-			Product* product = shop_manager->GetProduct(invoice->product_id); 
+			Product* product = shop_manager->GetProduct(invoice->product_id);
 
-			return format("{0:<12}{1:<20}{2:<16}", invoice->date, limit(product->title, 18), to_string(product->price * invoice->product_count) + "원");
+			return format("{0:<12}{1:<20}{2:<8}{3:<12}{4:<10}", invoice->date, limit(product->title, 18), product->author,
+															  to_string(product->price * invoice->product_count) + "원", invoice->GetState());
 		};
 
 		_template.next_menu_code = MENU_INVOICE_INFO;
@@ -855,7 +870,7 @@ void Program::SetMenu()
 		_template.SetName("구매자 메뉴화면");
 		_template.ToggleCommand('l', 'q');
 		_template.SubMenu("상품 목록", [=]() { menu_manager->RunMenu(MENU_B_PRODUCT_LIST, shop_manager->GetProductList()); });
-		_template.SubMenu("고객 계정 정보", [=]() { menu_manager->RunMenu(MENU_ACCOUNT_INFO, shop_manager->GetUser()); });
+		_template.SubMenu("고객 계정 정보", [=]() { menu_manager->RunMenu(MENU_ACCOUNT_INFO, shop_manager->GetCurrentAccount()); });
 		_template.Apply(MENU_BUYER);
 	}
 	
@@ -867,17 +882,17 @@ void Program::SetMenu()
 
 		// 테이블 출력 형식 지정 
 		_template.header_func = []() -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", "ID", "상품", "장르", "가격", "재고");
+			return format("{0:<10}{1:<20}{2:<8}{3:<8}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", product->id, limit(product->title, 18), product->genre, to_string(product->price) + "원", product->count);
+			return format("{0:<10}{1:<20}{2:<8}{3:<8}{4:<12}{5:<8}", product->id, limit(product->title, 18), product->genre, product->author, to_string(product->price) + "원", product->count);
 		}; 
 
 		// 메뉴 추가 및 기능
 		_template.SubMenu('p', "상품 검색 및 장르 선택", []() {
 			set<string> genre_set;
 
-			vector<Product*>& product_list = shop_manager->GetProductList(); 
+			const vector<Product*>& product_list = shop_manager->GetProductList(); 
 
 			for (int i = 0; i < product_list.size(); i++) {
 				Product* product = product_list[i];
@@ -915,7 +930,7 @@ void Program::SetMenu()
 		_template.process_func = [=](MenuIO& IO, MenuCode next_menu_code, string genre) {
 			string input = IO.input("", "제목");
 
-			vector<Product*>& product_list = shop_manager->GetProductList();
+			const vector<Product*>& product_list = shop_manager->GetProductList();
 
 			static vector<Product*> result; result.clear();
 
@@ -982,7 +997,7 @@ void Program::SetMenu()
 			IO.print_aligned_center("[ 상품 구매 ]");
 			int count;
 			string input;
-			Account* user = shop_manager->GetUser();
+			Account* user = shop_manager->GetCurrentAccount();
 			vector<string> invoice = { user->id,user->phone_number,user->address, today(), to_string(target->id)};
 			IO.print_line();
 			IO.print("[상품 구매]\n");
