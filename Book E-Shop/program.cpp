@@ -31,7 +31,10 @@ void Program::LoadCSV()
 	auto product_raw = data_manager->ParseCSV("./data/product.csv");
 	for (size_t i = 0; i < product_raw.size(); i++) {
 		// 생성된 Product 객체를 shop_manager에 추가합니다.
-		shop_manager->AddProduct(new Product(product_raw[i]));
+		auto product = new Product(product_raw[i]);
+
+		shop_manager->AddProduct(product);
+		shop_manager->EnableProduct(product);
 	}
 
 	// Account CSV 파일을 파싱합니다.
@@ -181,7 +184,7 @@ void Program::SetParser()
 	data_manager->AppendParser("invoice_id", (new Parser())
 		->set_label("고유번호")
 		->set_regex(LR"(^[0-9]{8}$)")
-		->set_msg_error("숫자로 구성된 길이가 8인 문자열이어야 합니다")
+		->set_msg_error("숫자로 구성된 길이가 8인 문자열이어야 합니다.")
 	);
 
 	// 주문 처리 정보 구매자의 아이디
@@ -217,7 +220,7 @@ void Program::SetParser()
 	data_manager->AppendParser("invoice_product_count", (new Parser())
 		->set_label("상품 수량")
 		->set_regex(LR"(^[1-9][0-9]*$)")
-		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다,")
+		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다.")
 	);
 #pragma endregion
 
@@ -647,7 +650,7 @@ void Program::SetMenu()
 			string input = IO.input("상품 등록 정보를 제거하시겠습니까? (y / n)");
 
 			if (input == "y") {
-				shop_manager->RemoveProduct(target->id);
+				shop_manager->DisableProduct(target);
 
 				IO.print(format("\n상품({0})의 등록 정보가 제거되었습니다.\n", target->id));
 				IO.pause();
@@ -865,12 +868,17 @@ void Program::SetMenu()
 			IO.print(format("상품 고유 번호 : {0}\n", target->product_id));
 			IO.print(format("상품 수량 : {0}\n", target->product_count));
 			IO.print(format("결제 금액 : {0}\n", product->price * target->product_count));
-			IO.print_line();
+
 			//메뉴 분할
-			if (shop_manager->IsAdmin()) { IO.pause(); }
+			if (shop_manager->IsAdmin() && target->state != PURCHASED) {
+				IO.print_line();
+				IO.pause();
+			}
 			else {
+				IO.print_line(false);
 				IO.print_aligned_center("반품(B)");
 				IO.print_line();
+
 				auto checkpoint = IO.checkpoint();
 				string input = IO.input();
 				if (input.size() == 1) {
@@ -1027,8 +1035,7 @@ void Program::SetMenu()
 			string input;
 			Account* user = shop_manager->GetCurrentAccount();
 			vector<string> invoice = { user->id,user->phone_number,user->address, today(), to_string(target->id)};
-			IO.print_line();
-			IO.print("[상품 구매]\n");
+			IO.print_line(); 
 			IO.print("[상품 상세 정보]\n");
 			IO.print(format("고유번호 : {0}\n", target->id));
 			IO.print(format("제목 : {0}\n", target->title));
@@ -1050,7 +1057,7 @@ void Program::SetMenu()
 						IO.print("주문 수량을 초과했습니다.\n");
 					}
 				}
-				IO.print(data_manager->GetParser("invoice_product_count")->msg_error);
+				IO.print(data_manager->GetParser("invoice_product_count")->msg_error + "\n");
 				IO.pause();
 				IO.rollback(checkpoint);
 			}
@@ -1096,35 +1103,32 @@ void Program::SetMenu()
 	//구매자 물건 반품
 	menu_manager->AppendMenu(MENU_B_REFUND, new Menu<Invoice*>(
 		[=](MenuIO& IO, Invoice* target) {
-			
-			Product* targetP = shop_manager->GetProduct(target->product_id);
-			Account* targetA = shop_manager->GetAccount(target->buyer_id);
 			menu_manager->PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ 반품 ]");
 
-			IO.print(format("결제금액 : {0}\n", target->price));
-			IO.print(format("사용한 3000원 쿠폰 개수 : {0}\n", target->coupon_count));
-			IO.print(format("최종 결제금액 : {0}\n", target->final_price));
+			Product* product = shop_manager->GetProduct(target->product_id, true);
+			Account* account = shop_manager->GetAccount(target->buyer_id);
+
+			IO.print(format("결제금액 : {0}원\n", target->price));
+			IO.print(format("사용한 3000원 쿠폰 개수 : {0}개\n", target->coupon_count));
+			IO.print(format("최종 결제금액 : {0}\n원", target->final_price));
 
 			IO.print_line();
 
 			string input = IO.input("해당 상품을 반품하시겠습니까?(y / n)\n(사용한 쿠폰은 돌려받을 수 없고, 최종 결제금액만 돌려받습니다.)");
 
 			if (input == "y") {
-				targetA->invoice_id_list.erase(remove(targetA->invoice_id_list.begin(), targetA->invoice_id_list.end(), target->id),
-					targetA->invoice_id_list.end());
-				shop_manager->RemoveInvoice(target->id);
-				if (targetP->deleted) {
-					targetP->deleted = false;
+				if (product->deleted) {
+					shop_manager->EnableProduct(product);
 				}
-				targetP->count += target->product_count;
+				product->count += target->product_count;
 				
-				IO.print("해당 상품을 반품합니다.");
+				IO.print("해당 상품이 반품되었습니다.");
 				IO.pause();
 
 			}
-			menu_manager->RunMenu(MENU_INVOICE_LIST, targetA->invoice_id_list);
+			menu_manager->RunMenu(MENU_INVOICE_LIST, account->invoice_id_list);
 		}
 	));
 #pragma endregion
