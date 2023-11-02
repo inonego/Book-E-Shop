@@ -164,6 +164,16 @@ void Program::SetParser()
 	data_manager->AppendParser("account_address", (new Parser())
 		->set_label("주소")
 	);
+	data_manager->AppendParser("account_coupon_count", (new Parser())
+		->set_label("보유 쿠폰 개수")
+		->set_regex(LR"(^[0-9]*$)")
+		->set_msg_error("보유 쿠폰 개수는 숫자로 구성된 문자열이어야 합니다!")
+	);
+	data_manager->AppendParser("account_accumulated", (new Parser())
+		->set_label("보유 쿠폰 개수")
+		->set_regex(LR"(^[0-9]*$)")
+		->set_msg_error("보유 쿠폰 개수는 숫자로 구성된 문자열이어야 합니다!")
+	);
 #pragma endregion
 
 #pragma region 주문 처리 정보 Parser
@@ -856,7 +866,25 @@ void Program::SetMenu()
 			IO.print(format("상품 수량 : {0}\n", target->product_count));
 			IO.print(format("결제 금액 : {0}\n", product->price * target->product_count));
 			IO.print_line();
-			IO.pause();
+			//메뉴 분할
+			if (shop_manager->IsAdmin()) { IO.pause(); }
+			else {
+				IO.print_aligned_center("반품(B)");
+				IO.print_line();
+				auto checkpoint = IO.checkpoint();
+				string input = IO.input();
+				if (input.size() == 1) {
+					char command = tolower(input[0]);
+
+					if (command == 'b') {
+						menu_manager->RunMenu(MENU_B_REFUND, target);
+					}
+				}
+				IO.print("메뉴에 표시된 알파벳 중 하나를 고르세요.\n");
+				IO.pause();
+
+				IO.rollback(checkpoint);
+			}
 		}
 	));
 	#pragma endregion
@@ -1005,6 +1033,7 @@ void Program::SetMenu()
 			IO.print(format("고유번호 : {0}\n", target->id));
 			IO.print(format("제목 : {0}\n", target->title));
 			IO.print(format("장르 : {0}\n", target->genre));
+			IO.print(format("저자 : {0}\n", target->author));
 			IO.print(format("가격 : {0}\n", target->price));
 			IO.print_line();
 			auto checkpoint = IO.checkpoint();
@@ -1034,6 +1063,23 @@ void Program::SetMenu()
 			IO.print("[결제금액]\n");
 			IO.print(format("{0}원 X {1}권 = {2}원\n", target->price, stoi(input), target->price * stoi(input)));
 			IO.print_line();
+			while (true) {
+				input = IO.input(format("사용하실 쿠폰 개수를 입력하세요\n보유 쿠폰 개수 : {0}개",user->coupon_count));
+				if (data_manager->GetParser("invoice_product_count")->Check(input)) {
+					if (target->count >= stoi(input))
+					{
+						count = stoi(input);
+						invoice.push_back(input);
+						break;
+					}
+					else {
+						IO.print("주문 수량을 초과했습니다.\n");
+					}
+				}
+				IO.print(data_manager->GetParser("invoice_product_count")->msg_error);
+				IO.pause();
+				IO.rollback(checkpoint);
+			}
 			input = IO.input("상품을 주문하시겠습니까?(y / n)");
 			if (input == "y") {
 				int id = (int)shop_manager->GetInvoiceList().size();
@@ -1047,6 +1093,40 @@ void Program::SetMenu()
 		}
 	));
 
+	//구매자 물건 반품
+	menu_manager->AppendMenu(MENU_B_REFUND, new Menu<Invoice*>(
+		[=](MenuIO& IO, Invoice* target) {
+			
+			Product* targetP = shop_manager->GetProduct(target->product_id);
+			Account* targetA = shop_manager->GetAccount(target->buyer_id);
+			menu_manager->PrintCommand();
+			IO.print_line();
+			IO.print_aligned_center("[ 반품 ]");
+
+			IO.print(format("결제금액 : {0}\n", target->price));
+			IO.print(format("사용한 3000원 쿠폰 개수 : {0}\n", target->coupon_count));
+			IO.print(format("최종 결제금액 : {0}\n", target->final_price));
+
+			IO.print_line();
+
+			string input = IO.input("해당 상품을 반품하시겠습니까?(y / n)\n(사용한 쿠폰은 돌려받을 수 없고, 최종 결제금액만 돌려받습니다.)");
+
+			if (input == "y") {
+				targetA->invoice_id_list.erase(remove(targetA->invoice_id_list.begin(), targetA->invoice_id_list.end(), target->id),
+					targetA->invoice_id_list.end());
+				shop_manager->RemoveInvoice(target->id);
+				if (targetP->deleted) {
+					targetP->deleted = false;
+				}
+				targetP->count += target->product_count;
+				
+				IO.print("해당 상품을 반품합니다.");
+				IO.pause();
+
+			}
+			menu_manager->RunMenu(MENU_INVOICE_LIST, targetA->invoice_id_list);
+		}
+	));
 #pragma endregion
 }
 #pragma endregion
