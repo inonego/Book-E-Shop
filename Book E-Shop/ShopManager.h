@@ -17,7 +17,8 @@ public:
 	Account* Login(string id, string password);
 	void Logout(); 
 
-	Account* GetAdminAccount() { return admin; }
+	Account* const GetCurrentAccount() { return current_user; }
+	const Account* const GetAdminAccount() { return admin; }
 	
 	void AddProduct(Product* product) { product_list.push_back(product); }
 	void AddAccount(Account* account) { account_list.push_back(account); }

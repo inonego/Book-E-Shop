@@ -17,6 +17,13 @@ static string today() {
     return format("{}.{:02}.{:02}", (date.tm_year) % 100, date.tm_mon + 1, date.tm_mday);
 }
 
+static string phone_number(string input) {
+    input.insert(3, "-");
+    input.insert(8, "-");
+
+    return input;
+}
+
 static string join(vector<int> array, string delimiter = ",") {
     string result;
 

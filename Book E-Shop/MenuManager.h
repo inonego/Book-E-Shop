@@ -37,7 +37,9 @@ private:
 	unordered_map<char, Command*> command_list;
 	unordered_set<char> command_availability;
 
-	void RunMenuInternal(MenuCode menu_code); 
+	void RunMenuInternal(MenuCode menu_code);
+
+	function<void(MenuIO&)> common_header_func;
 public:   
 	MenuManager();
 	~MenuManager();
@@ -90,6 +92,8 @@ public:
 	void RunRecursiveMenu(MenuCode menu_code, TP&&... args);
 
 	void RunPreviousMenu();
+
+	void SetCommonHeader(function<void(MenuIO&)> common_header_func);
 }; 
 
 inline void MenuManager::RunMenuInternal(MenuCode menu_code)
@@ -97,6 +101,8 @@ inline void MenuManager::RunMenuInternal(MenuCode menu_code)
 	menu_stack.erase(find(menu_stack.begin(), menu_stack.end(), menu_code), menu_stack.end());
 
 	menu_stack.push_back(menu_code);
+
+	common_header_func(IO);
 
 	GetMenu(menu_code)->Run(IO);
 }
@@ -122,6 +128,7 @@ inline void MenuManager::RunRecursiveMenu(MenuCode menu_code, TP&& ...args)
 
 	ToggleCommand('z', 'l', 'q');
 
+	common_header_func(IO);
 	// 메뉴 실행
 	GetMenu(menu_code)->SetArgs(forward<TP>(args)...)->Run(IO);
 
@@ -146,4 +153,9 @@ inline void MenuManager::RunPreviousMenu()
 	}
 
 	throw menu_code;
+}
+
+inline void MenuManager::SetCommonHeader(function<void(MenuIO&)> common_header_func)
+{
+	this->common_header_func = common_header_func;
 }

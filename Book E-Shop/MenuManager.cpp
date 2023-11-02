@@ -63,7 +63,7 @@ void MenuManager::Start(MenuCode menu_code)
 
 		ToggleCommand('z', 'l', 'q');
 
-		try {
+		try { 
 			RunMenuInternal(menu_code);
 			RunPreviousMenu();
 		}

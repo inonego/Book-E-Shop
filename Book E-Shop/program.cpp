@@ -222,6 +222,10 @@ void Program::SetParser()
 
 void Program::SetMenu()
 {	
+	menu_manager->SetCommonHeader([=](MenuIO& IO) {
+		IO.print_aligned_center("# 도서 인터넷 쇼핑몰 #");
+	});
+
 #pragma region 공통 메뉴화면
 	menu_manager->AppendMenu(MENU_QUIT, new Menu([=](MenuIO& IO) {
 		menu_manager->ToggleCommand();
@@ -250,6 +254,9 @@ void Program::SetMenu()
 		if (input == "y") {
 			shop_manager->Logout();
 
+			menu_manager->SetCommonHeader([=](MenuIO& IO) {
+				IO.print_aligned_center("# 도서 인터넷 쇼핑몰 #");
+			});
 			menu_manager->RunMenu(MENU_START);
 		}
 		}));
@@ -290,9 +297,15 @@ void Program::SetMenu()
 				// 일치하는 계정 정보가 있는지 확인합니다.
 				if ((user = shop_manager->Login(id, password)) != nullptr) {
 					if (user == shop_manager->GetAdminAccount()) {
+						menu_manager->SetCommonHeader([=](MenuIO& IO) {
+							IO.print_aligned_center("관리자님이 접속하였습니다.");
+						});
 						menu_manager->RunMenu(MENU_ADMIN);
 					}
 					else {
+						menu_manager->SetCommonHeader([=](MenuIO& IO) {
+							IO.print_aligned_center(format("{}님이 접속하였습니다.", shop_manager->GetCurrentAccount()->name));
+						});
 						menu_manager->RunMenu(MENU_BUYER);
 					}
 				}
@@ -635,7 +648,7 @@ void Program::SetMenu()
 			return format("{0:<16}{1:<8}{2:<16}", "아이디", "이름", "전화번호");
 		};
 		_template.show_func = [](Account* product) -> string {
-			return format("{0:<16}{1:<8}{2:<16}", product->id, product->name, product->phone_number);
+			return format("{0:<16}{1:<8}{2:<16}", product->id, product->name, phone_number(product->phone_number));
 		};
 		_template.SubMenu('p', "고객 검색", [=]() { menu_manager->RunMenu(MENU_A_ACCOUNT_SEARCH);  });
 
@@ -690,7 +703,7 @@ void Program::SetMenu()
 
 			IO.print(format("이름 : {0}\n", target->name));
 			IO.print(format("아이디 : {0}\n", target->id));
-			IO.print(format("전화번호 : {0}\n", target->phone_number));
+			IO.print(format("전화번호 : {0}\n", phone_number(target->phone_number)));
 			IO.print(format("주소 : {0}\n", target->address));
 
 			IO.print_line();
@@ -820,7 +833,7 @@ void Program::SetMenu()
 			IO.print("\n[ 주문자 정보 ]\n");
 			IO.print(format("아이디 : {0}\n", account->id));
 			IO.print(format("이름 : {0}\n", account->name));
-			IO.print(format("전화번호 : {0}\n", target->recipient_phone_number));
+			IO.print(format("전화번호 : {0}\n", phone_number(target->recipient_phone_number)));
 			IO.print(format("주소 : {0}\n", target->recipient_address));
 
 			IO.print("\n");
@@ -1000,7 +1013,7 @@ void Program::SetMenu()
 			IO.print_line();
 			IO.print("[주문자 정보]\n");
 			IO.print(format("이름 : {0}\n", user->name));
-			IO.print(format("전화번호 : {0}\n", user->phone_number));
+			IO.print(format("전화번호 : {0}\n", phone_number(user->phone_number)));
 			IO.print(format("주소 : {0}\n", user->address));
 			IO.print_line();
 			IO.print("[결제금액]\n");

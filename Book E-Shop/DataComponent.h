@@ -34,6 +34,8 @@ public:
 	string genre;
 	int price;
 	int count;
+	string author;
+	bool deleted;
 
 	virtual string GetKey() override;
 	virtual vector<string> ToArray() override;
@@ -54,9 +56,17 @@ public:
 	string phone_number;
 	string address;
 	vector<int> invoice_id_list;
+	int coupon_count;
+	int accumulated;
 
 	virtual string GetKey() override; 
 	virtual vector<string> ToArray() override;
+};
+
+enum InvoiceState {
+	PURCHASED = 0,
+	CONFIRMED = 1,
+	REFUNDED  = 2
 };
 
 // 주문 처리 정보
@@ -72,6 +82,10 @@ public:
 	string date;
 	int product_id;
 	int product_count;
+	int price;
+	int coupon_count;
+	int final_price;
+	InvoiceState state;
 
 	virtual string GetKey() override; 
 	virtual vector<string> ToArray() override;
