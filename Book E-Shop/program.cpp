@@ -164,9 +164,9 @@ void Program::SetParser()
 		->set_msg_error("보유 쿠폰 개수는 숫자로 구성된 문자열이어야 합니다!")
 	);
 	data_manager->AppendParser("account_accumulated", (new Parser())
-		->set_label("보유 쿠폰 개수")
-		->set_regex(LR"(^[0-9]*$)")
-		->set_msg_error("보유 쿠폰 개수는 숫자로 구성된 문자열이어야 합니다!")
+		->set_label("구매확정 누적 금액")
+		->set_regex(LR"(^[0-9]+$)")
+		->set_msg_error("구매확정 누적 금액은 숫자로 구성된 길이가 1 이상의 문자열이어야 합니다!")
 	);
 #pragma endregion
 
@@ -1008,7 +1008,7 @@ void Program::SetMenu()
 			menu_manager->PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ 상품 구매 ]");
-			int count;
+			int count, price, coupon_count, final_price;
 			string input;
 			Account* user = shop_manager->GetUser();
 			vector<string> invoice = { user->id,user->phone_number,user->address, today(), to_string(target->id)};
@@ -1028,14 +1028,15 @@ void Program::SetMenu()
 					if (target->count >= stoi(input))
 					{
 						count = stoi(input);
-						invoice.push_back(input);
 						break;
 					}
 					else {
 						IO.print("주문 수량을 초과했습니다.\n");
 					}
 				}
-				IO.print(data_manager->GetParser("invoice_product_count")->msg_error);
+				else
+					IO.print(data_manager->GetParser("invoice_product_count")->msg_error);
+				
 				IO.pause();
 				IO.rollback(checkpoint);
 			}
@@ -1046,30 +1047,49 @@ void Program::SetMenu()
 			IO.print(format("주소 : {0}\n", user->address));
 			IO.print_line();
 			IO.print("[결제금액]\n");
-			IO.print(format("{0}원 X {1}권 = {2}원\n", target->price, stoi(input), target->price * stoi(input)));
+			IO.print(format("{0}원 X {1}권 = {2}원\n", target->price, count, price = target->price*count));
 			IO.print_line();
+			checkpoint = IO.checkpoint();
 			while (true) {
 				input = IO.input(format("사용하실 쿠폰 개수를 입력하세요\n보유 쿠폰 개수 : {0}개",user->coupon_count));
-				if (data_manager->GetParser("invoice_product_count")->Check(input)) {
-					if (target->count >= stoi(input))
-					{
-						count = stoi(input);
-						invoice.push_back(input);
-						break;
+				if (data_manager->GetParser("account_coupon_count")->Check(input)) {
+					coupon_count = stoi(input);
+					if (user->coupon_count >= coupon_count)
+					{				
+						int max_coupon_count = ceil(float(price) / 3000);
+						if (max_coupon_count < coupon_count) //최대 사용 가능 쿠폰보다 많으면
+						{
+							IO.print(format("쿠폰을 {0}개보다 많이 사용할 수 없습니다\n", max_coupon_count));
+						}
+						else {
+							break;
+						}					
 					}
 					else {
-						IO.print("주문 수량을 초과했습니다.\n");
+						IO.print("입력한 수량이 보유한 쿠폰 개수를 초과했습니다.");
 					}
 				}
-				IO.print(data_manager->GetParser("invoice_product_count")->msg_error);
+				else {
+					IO.print(data_manager->GetParser("account_coupon_count")->msg_error);				
+				}
 				IO.pause();
 				IO.rollback(checkpoint);
 			}
+			IO.print_line();
+			final_price = price - 3000*coupon_count >= 0 ? price - 3000 * coupon_count : 0 ;
+			
+			IO.print(format("최종 결제 금액 : {0}\n",final_price));
+			IO.print_line();
 			input = IO.input("상품을 주문하시겠습니까?(y / n)");
 			if (input == "y") {
 				int id = (int)shop_manager->GetInvoiceList().size();
 				target->count -= count; //제품 개수 업데이트
-				invoice.insert(invoice.begin(), to_string(id));
+				invoice.push_back(to_string(count));
+				invoice.push_back(to_string(price));
+				invoice.push_back(to_string(coupon_count));
+				invoice.push_back(to_string(final_price));
+				invoice.push_back("0");
+				invoice.insert(invoice.begin(), to_string(id));				
 				shop_manager->AddInvoice(new Invoice(invoice));
 				user->invoice_id_list.push_back(id);
 				IO.pause();
