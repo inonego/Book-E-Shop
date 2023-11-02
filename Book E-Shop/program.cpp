@@ -95,7 +95,7 @@ void Program::SetParser()
 	// »óÇ° µî·Ï Á¤º¸ °íÀ¯ ¹øÈ£
 	data_manager->AppendParser("product_id", (new Parser())
 		->set_label("°íÀ¯¹øÈ£")
-		->set_regex(R"(^[0-9]{6}$)")
+		->set_regex(LR"(^[0-9]{6}$)")
 		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 6ÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.")
 	);
 
@@ -112,14 +112,14 @@ void Program::SetParser()
 	// »óÇ° µî·Ï Á¤º¸ °¡°Ý
 	data_manager->AppendParser("product_price", (new Parser())
 		->set_label("°¡°Ý")
-		->set_regex(R"(^[0-9]+$)")
+		->set_regex(LR"(^[0-9]+$)")
 		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.")
 	);
 
 	// »óÇ° µî·Ï Á¤º¸ Àç°í
 	data_manager->AppendParser("product_count", (new Parser())
 		->set_label("Àç°í")
-		->set_regex(R"(^[0-9]+$)")
+		->set_regex(LR"(^[0-9]+$)")
 		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.")
 	);
 #pragma endregion
@@ -129,28 +129,28 @@ void Program::SetParser()
 	// °í°´ °èÁ¤ Á¤º¸ ÀÌ¸§
 	data_manager->AppendParser("account_name", (new Parser())
 		->set_label("ÀÌ¸§")
-		->set_regex(R"(^[ ]*[a-zA-Z°¡-ÆR]+[a-zA-Z°¡-ÆR]*$)")
+		->set_regex(LR"(^[ ]*[a-zA-Z°¡-ÆR]+[ a-zA-Z°¡-ÆR]*$)")
 		->set_msg_error("ÀÌ¸§Àº °ø¹é, ¿µ¹®ÀÚ, ÇÑ±Û Çã¿ëÇÑ °ø¹éÀ» Á¦¿ÜÇÑ ±æÀÌ°¡ 1 ÀÌ»óÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
 	);
 
 	// °í°´ °èÁ¤ Á¤º¸ ¾ÆÀÌµð
 	data_manager->AppendParser("account_id", (new Parser())
 		->set_label("¾ÆÀÌµð")
-		->set_regex(R"(^[0-9a-zA-Z]{4,12}$)")
+		->set_regex(LR"(^[0-9a-zA-Z]{4,12}$)")
 		->set_msg_error("¾ÆÀÌµð´Â ¼ýÀÚ, ¿µ¹®ÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 4 ÀÌ»ó 12 ÀÌÇÏÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
 	);
 
 	// °í°´ °èÁ¤ Á¤º¸ ºñ¹Ð¹øÈ£
 	data_manager->AppendParser("account_password", (new Parser())
 		->set_label("ºñ¹Ð¹øÈ£")
-		->set_regex(R"(^[0-9a-zA-Z!@#$%^&*_]{8,16}$)")
+		->set_regex(LR"(^[0-9a-zA-Z!@#$%^&*_]{8,16}$)")
 		->set_msg_error("ºñ¹Ð¹øÈ£´Â ¼ýÀÚ, ¿µ¹®ÀÚ, Æ¯¼ö ¹®ÀÚ(!@#$%^&*_)·Î ±¸¼ºµÈ ±æÀÌ°¡ 8 ÀÌ»ó 16 ÀÌÇÏÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
 	);
 
 	// °í°´ °èÁ¤ Á¤º¸ ÀüÈ­¹øÈ£
 	data_manager->AppendParser("account_phonenumber", (new Parser())
 		->set_label("ÀüÈ­¹øÈ£")
-		->set_regex(R"(^010[0-9]{8}$)")
+		->set_regex(LR"(^010[0-9]{8}$)")
 		->set_msg_error("ÀüÈ­¹øÈ£´Â ¼ýÀÚ·Î ±¸¼ºµÇ¾î 010À¸·Î ½ÃÀÛÇÏ°í, ±æÀÌ°¡ 11ÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
 	);
 
@@ -164,7 +164,7 @@ void Program::SetParser()
 	// ÁÖ¹® Ã³¸® Á¤º¸ °íÀ¯¹øÈ£
 	data_manager->AppendParser("invoice_id", (new Parser())
 		->set_label("°íÀ¯¹øÈ£")
-		->set_regex(R"(^[0-9]{8}$)")
+		->set_regex(LR"(^[0-9]{8}$)")
 		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 8ÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù")
 	);
 
@@ -200,19 +200,19 @@ void Program::SetParser()
 	// ÁÖ¹® Ã³¸® Á¤º¸ »óÇ° ¼ö·®
 	data_manager->AppendParser("invoice_product_count", (new Parser())
 		->set_label("»óÇ° ¼ö·®")
-		->set_regex(R"(^[1-9][0-9]*$)")
+		->set_regex(LR"(^[1-9][0-9]*$)")
 		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù,")
 	);
 #pragma endregion
 
 
 	data_manager->AppendParser("MENU_MENUSELECTION", (new Parser())
-		->set_regex(R"(\d)")
+		->set_regex(LR"(\d)")
 		->set_msg_error("¸Þ´º¿¡ Ç¥½ÃµÈ ¹øÈ£ Áß ÇÏ³ª¸¦ °í¸£¼¼¿ä.")
 	);
 
 	data_manager->AppendParser("MENU_TABLE", (new Parser())
-		->set_regex(R"(^[0-9a-zA-Z]$)")
+		->set_regex(LR"(^[0-9a-zA-Z]$)")
 		->set_msg_error("¸Þ´º¿¡ Ç¥½ÃµÈ ¹øÈ£ ¶Ç´Â ¾ËÆÄºª Áß ÇÏ³ª¸¦ °í¸£¼¼¿ä.")
 	);
 }
@@ -528,7 +528,7 @@ void Program::SetMenu()
 
 			IO.print_line();
 
-			IO.print_aligned_center("¼öÁ¤(M)     Á¦°Å(R)");
+			IO.print_aligned_center("¼öÁ¤(M)     Á¦°Å(LR)");
 
 			IO.print_line();
 
@@ -637,13 +637,12 @@ void Program::SetMenu()
 		_template.show_func = [](Account* product) -> string {
 			return format("{0:<16}{1:<8}{2:<16}", product->id, product->name, product->phone_number);
 		};
-		_template.SubMenu('p', "°í°´ °Ë»ö", [=]() { menu_manager->RunMenu(MENU_A_PRODUCT_SEARCH);  });
+		_template.SubMenu('p', "°í°´ °Ë»ö", [=]() { menu_manager->RunMenu(MENU_A_ACCOUNT_SEARCH);  });
 
 		_template.next_menu_code = MENU_ACCOUNT_INFO;
 
 		_template.Apply(MENU_A_ACCOUNT_LIST);
 	}
-
 
 	// °í°´ °Ë»ö ¸Þ´ºÈ­¸é
 	menu_manager->AppendMenu(MENU_A_ACCOUNT_SEARCH, new Menu(
@@ -651,6 +650,34 @@ void Program::SetMenu()
 			menu_manager->PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ °í°´ °Ë»ö ]");
+			
+			Account* target;
+
+			auto checkpoint = IO.checkpoint();
+
+			while (true) {
+
+				string input = IO.input("¾ÆÀÌµð¸¦ ÀÔ·ÂÇÏ¼¼¿ä.");
+
+				if (input == shop_manager->GetAdminAccount()->id) {
+					IO.print("ÇØ´ç °èÁ¤Àº °ü¸®ÀÚ °èÁ¤ÀÔ´Ï´Ù.\n");
+					IO.pause();
+
+					IO.rollback(checkpoint);
+				}
+				else {
+					if ((target = shop_manager->GetAccount(input)) != nullptr) {
+						menu_manager->RunMenu(MENU_ACCOUNT_INFO, target);
+					}
+					else
+					{
+						IO.print("¾ÆÀÌµð°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.\n");
+						IO.pause();
+
+						IO.rollback(checkpoint);
+					}
+				}
+			}
 		}
 	));
 	
@@ -681,7 +708,7 @@ void Program::SetMenu()
 					char command = tolower(input[0]);
 
 					if (command == 'o') {
-						menu_manager->RunMenu(MENU_INVOICE_LIST, target);
+						menu_manager->RunMenu(MENU_INVOICE_LIST, target->invoice_id_list);
 					}
 					else if (command == 'm') {
 						menu_manager->RunMenu(MENU_ACCOUNT_INFO_M, target);
@@ -818,21 +845,26 @@ void Program::SetMenu()
 		_template.SubMenu("°í°´ °èÁ¤ Á¤º¸", [=]() { menu_manager->RunMenu(MENU_ACCOUNT_INFO, shop_manager->GetUser()); });
 		_template.Apply(MENU_BUYER);
 	}
-
+	
+	#pragma region »óÇ° ¸ñ·Ï
 	// »óÇ° ¸ñ·Ï ¸Þ´ºÈ­¸é
 	{
 		TemplateTable<Product*> _template;
 		_template.SetName("»óÇ° ¸ñ·Ï");
+
+		// Å×ÀÌºí Ãâ·Â Çü½Ä ÁöÁ¤ 
 		_template.header_func = []() -> string {
 			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", "ID", "»óÇ°", "Àå¸£", "°¡°Ý", "Àç°í");
 		};
 		_template.show_func = [](Product* product) -> string {
 			return format("{0:<10}{1:<20}{2:<8}{3:<12}{4:<8}", product->id, limit(product->title, 18), product->genre, to_string(product->price) + "¿ø", product->count);
-		};
+		}; 
+
+		// ¸Þ´º Ãß°¡ ¹× ±â´É
 		_template.SubMenu('p', "»óÇ° °Ë»ö ¹× Àå¸£ ¼±ÅÃ", []() {
 			set<string> genre_set;
 
-			vector<Product*>& product_list = shop_manager->GetProductList();
+			vector<Product*>& product_list = shop_manager->GetProductList(); 
 
 			for (int i = 0; i < product_list.size(); i++) {
 				Product* product = product_list[i];
@@ -840,7 +872,7 @@ void Program::SetMenu()
 				genre_set.insert(product->genre);
 			}
 
-			vector<string> genre_list(genre_set.begin(), genre_set.end());
+			static vector<string> genre_list; genre_list = vector<string>(genre_set.begin(), genre_set.end());
 
 			for (int i = 0; i < genre_list.size(); i += 10) {
 				genre_list.insert(genre_list.begin() + i, "ÀüÃ¼");
@@ -852,7 +884,7 @@ void Program::SetMenu()
 		_template.next_menu_code = MENU_B_PRODUCT_INFO;
 
 		_template.Apply(MENU_B_PRODUCT_LIST);
-	}
+	}  
 
 	// »óÇ° °Ë»ö ¹× Àå¸£ ¼±ÅÃ ¸Þ´ºÈ­¸é
 	{
@@ -864,15 +896,15 @@ void Program::SetMenu()
 		_template.show_func = [](string genre) -> string {
 			return genre;
 		};
-
-		_template.next_menu_code = MENU_B_PRODUCT_LIST;
+		 
+		_template.next_menu_code = MENU_B_PRODUCT_LIST; 
 
 		_template.process_func = [=](MenuIO& IO, MenuCode next_menu_code, string genre) {
 			string input = IO.input("", "Á¦¸ñ");
 
 			vector<Product*>& product_list = shop_manager->GetProductList();
 
-			vector<Product*> result;
+			static vector<Product*> result; result.clear();
 
 			for (int i = 0; i < product_list.size(); i++) {
 				Product* product = product_list[i];
@@ -881,14 +913,15 @@ void Program::SetMenu()
 					result.push_back(product);
 				}
 			}
-
+			 
 			menu_manager->RunMenu(next_menu_code, result);
 		};
 
 		_template.Apply(MENU_B_PRODUCT_SEARCH);
 	}
+#pragma endregion
 
-	// »óÇ° »ó¼¼ Á¤º¸ È®ÀÎ ¸Þ´ºÈ­¸é
+	// »óÇ° µî·Ï Á¤º¸ ¸Þ´ºÈ­¸é
 	menu_manager->AppendMenu(MENU_B_PRODUCT_INFO, new Menu<Product*>(
 		[=](MenuIO& IO, Product* target) {
 			menu_manager->PrintCommand();
@@ -903,7 +936,7 @@ void Program::SetMenu()
 
 			IO.print_line();
 
-			IO.print("±¸¸Å(B)\n");
+			IO.print_aligned_center("±¸¸Å(B)");
 
 			IO.print_line();
 
@@ -912,18 +945,22 @@ void Program::SetMenu()
 			while (true) {
 				string input = IO.input();
 
-				if (input == "B") {
-					menu_manager->RunMenu(MENU_B_PRODUCT_BUY, target);
-				}
-				else {
-					IO.print("ÀÏÄ¡ÇÏ´Â ¸í·É¾î°¡ ¾øÀ½.\n");
-					IO.pause();
+				if (input.size() == 1) {
+					char command = tolower(input[0]);
 
-					IO.rollback(checkpoint);
+					if (command == 'b') {
+						menu_manager->RunMenu(MENU_B_PRODUCT_BUY, target);
+					}
 				}
+
+				IO.print("¸Þ´º¿¡ Ç¥½ÃµÈ ¾ËÆÄºª Áß ÇÏ³ª¸¦ °í¸£¼¼¿ä.\n");
+				IO.pause();
+
+				IO.rollback(checkpoint);
 			}
 		}
 	));
+
 	// »óÇ° ±¸¸Å ¸Þ´ºÈ­¸é
 	menu_manager->AppendMenu(MENU_B_PRODUCT_BUY, new Menu<Product*>(
 		[=](MenuIO& IO, Product* target) {
@@ -933,7 +970,7 @@ void Program::SetMenu()
 			int count;
 			string input;
 			Account* user = shop_manager->GetUser();
-			vector<string> invoice = { user->id,user->phone_number,user->address, "23.10.29", to_string(target->id)};
+			vector<string> invoice = { user->id,user->phone_number,user->address, today(), to_string(target->id)};
 			IO.print_line();
 			IO.print("[»óÇ° ±¸¸Å]\n");
 			IO.print("[»óÇ° »ó¼¼ Á¤º¸]\n");
@@ -944,7 +981,7 @@ void Program::SetMenu()
 			IO.print_line();
 			auto checkpoint = IO.checkpoint();
 			while (true) {
-				input = IO.input("ÁÖ¹® ¼ö·®À» ÀÔ·ÂÇÏ¼¼¿ä");
+				input = IO.input("ÁÖ¹® ¼ö·®À» ÀÔ·ÂÇÏ¼¼¿ä.");
 				if (data_manager->GetParser("invoice_product_count")->Check(input)) {
 					if (target->count >= stoi(input))
 					{
@@ -953,7 +990,7 @@ void Program::SetMenu()
 						break;
 					}
 					else {
-						IO.print("ÁÖ¹® ¼ö·®À» ÃÊ°úÇß½À´Ï´Ù\n");
+						IO.print("ÁÖ¹® ¼ö·®À» ÃÊ°úÇß½À´Ï´Ù.\n");
 					}
 				}
 				IO.print(data_manager->GetParser("invoice_product_count")->msg_error);
@@ -969,9 +1006,9 @@ void Program::SetMenu()
 			IO.print("[°áÁ¦±Ý¾×]\n");
 			IO.print(format("{0}¿ø X {1}±Ç = {2}¿ø\n", target->price, stoi(input), target->price * stoi(input)));
 			IO.print_line();
-			input = IO.input("»óÇ°À» ÁÖ¹®ÇÏ½Ã°Ú½À´Ï±î?(y/n)");
+			input = IO.input("»óÇ°À» ÁÖ¹®ÇÏ½Ã°Ú½À´Ï±î?(y / n)");
 			if (input == "y") {
-				int id = 7 + shop_manager->GetInvoiceList().size(); //id »ý¼º ¸ÅÄ¿´ÏÁò??
+				int id = (int)shop_manager->GetInvoiceList().size();
 				target->count -= count; //Á¦Ç° °³¼ö ¾÷µ¥ÀÌÆ®
 				invoice.insert(invoice.begin(), to_string(id));
 				shop_manager->AddInvoice(new Invoice(invoice));
