@@ -3,6 +3,7 @@
 
 #include <set>
 #include <format>
+#include <stdlib.h>
 
 DataManager* const Program::data_manager = new DataManager();
 MenuManager* const Program::menu_manager = new MenuManager();
@@ -17,6 +18,8 @@ void Program::CleanUp()
 
 void Program::Run()
 {
+	atexit(SaveCSV);
+
 	LoadCSV();
 	SetCommand();
 	SetParser();
@@ -101,7 +104,7 @@ void Program::SetParser()
 	data_manager->AppendParser("product_id", (new Parser())
 		->set_label("°íÀ¯¹øÈ£")
 		->set_regex(LR"(^[0-9]{6}$)")
-		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 6ÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.")
+		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 6ÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 
 	// »óÇ° µî·Ï Á¤º¸ Á¦¸ñ
@@ -123,14 +126,14 @@ void Program::SetParser()
 	data_manager->AppendParser("product_price", (new Parser())
 		->set_label("°¡°Ý")
 		->set_regex(LR"(^[0-9]+$)")
-		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.")
+		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 
 	// »óÇ° µî·Ï Á¤º¸ Àç°í
 	data_manager->AppendParser("product_count", (new Parser())
 		->set_label("Àç°í")
 		->set_regex(LR"(^[0-9]+$)")
-		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.")
+		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 #pragma endregion
 
@@ -140,28 +143,28 @@ void Program::SetParser()
 	data_manager->AppendParser("account_name", (new Parser())
 		->set_label("ÀÌ¸§")
 		->set_regex(LR"(^[ ]*[a-zA-Z°¡-ÆR]+[ a-zA-Z°¡-ÆR]*$)")
-		->set_msg_error("ÀÌ¸§Àº °ø¹é, ¿µ¹®ÀÚ, ÇÑ±Û Çã¿ëÇÑ °ø¹éÀ» Á¦¿ÜÇÑ ±æÀÌ°¡ 1 ÀÌ»óÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
+		->set_msg_error("ÀÌ¸§Àº °ø¹é, ¿µ¹®ÀÚ, ÇÑ±Û Çã¿ëÇÑ °ø¹éÀ» Á¦¿ÜÇÑ ±æÀÌ°¡ 1 ÀÌ»óÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 
 	// °í°´ °èÁ¤ Á¤º¸ ¾ÆÀÌµð
 	data_manager->AppendParser("account_id", (new Parser())
 		->set_label("¾ÆÀÌµð")
 		->set_regex(LR"(^[0-9a-zA-Z]{4,12}$)")
-		->set_msg_error("¾ÆÀÌµð´Â ¼ýÀÚ, ¿µ¹®ÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 4 ÀÌ»ó 12 ÀÌÇÏÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
+		->set_msg_error("¾ÆÀÌµð´Â ¼ýÀÚ, ¿µ¹®ÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 4 ÀÌ»ó 12 ÀÌÇÏÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 
 	// °í°´ °èÁ¤ Á¤º¸ ºñ¹Ð¹øÈ£
 	data_manager->AppendParser("account_password", (new Parser())
 		->set_label("ºñ¹Ð¹øÈ£")
 		->set_regex(LR"(^[0-9a-zA-Z!@#$%^&*_]{8,16}$)")
-		->set_msg_error("ºñ¹Ð¹øÈ£´Â ¼ýÀÚ, ¿µ¹®ÀÚ, Æ¯¼ö ¹®ÀÚ(!@#$%^&*_)·Î ±¸¼ºµÈ ±æÀÌ°¡ 8 ÀÌ»ó 16 ÀÌÇÏÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
+		->set_msg_error("ºñ¹Ð¹øÈ£´Â ¼ýÀÚ, ¿µ¹®ÀÚ, Æ¯¼ö ¹®ÀÚ(!@#$%^&*_)·Î ±¸¼ºµÈ ±æÀÌ°¡ 8 ÀÌ»ó 16 ÀÌÇÏÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 
 	// °í°´ °èÁ¤ Á¤º¸ ÀüÈ­¹øÈ£
-	data_manager->AppendParser("account_phonenumber", (new Parser())
+	data_manager->AppendParser("account_phone_number", (new Parser())
 		->set_label("ÀüÈ­¹øÈ£")
 		->set_regex(LR"(^010[0-9]{8}$)")
-		->set_msg_error("ÀüÈ­¹øÈ£´Â ¼ýÀÚ·Î ±¸¼ºµÇ¾î 010À¸·Î ½ÃÀÛÇÏ°í, ±æÀÌ°¡ 11ÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
+		->set_msg_error("ÀüÈ­¹øÈ£´Â ¼ýÀÚ·Î ±¸¼ºµÇ¾î 010À¸·Î ½ÃÀÛÇÏ°í, ±æÀÌ°¡ 11ÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 
 	// °í°´ °èÁ¤ Á¤º¸ ÁÖ¼Ò
@@ -170,13 +173,13 @@ void Program::SetParser()
 	);
 	data_manager->AppendParser("account_coupon_count", (new Parser())
 		->set_label("º¸À¯ ÄíÆù °³¼ö")
-		->set_regex(LR"(^[0-9]*$)")
-		->set_msg_error("º¸À¯ ÄíÆù °³¼ö´Â ¼ýÀÚ·Î ±¸¼ºµÈ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
+		->set_regex(LR"(^[0-9]+$)")
+		->set_msg_error("º¸À¯ ÄíÆù °³¼ö´Â ¼ýÀÚ·Î ±¸¼ºµÈ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 	data_manager->AppendParser("account_accumulated", (new Parser())
 		->set_label("±¸¸ÅÈ®Á¤ ´©Àû ±Ý¾×")
 		->set_regex(LR"(^[0-9]+$)")
-		->set_msg_error("±¸¸ÅÈ®Á¤ ´©Àû ±Ý¾×Àº ¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù!")
+		->set_msg_error("±¸¸ÅÈ®Á¤ ´©Àû ±Ý¾×Àº ¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 #pragma endregion
 
@@ -185,25 +188,13 @@ void Program::SetParser()
 	data_manager->AppendParser("invoice_id", (new Parser())
 		->set_label("°íÀ¯¹øÈ£")
 		->set_regex(LR"(^[0-9]{8}$)")
-		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 8ÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.")
+		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 8ÀÎ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 
 	// ÁÖ¹® Ã³¸® Á¤º¸ ±¸¸ÅÀÚÀÇ ¾ÆÀÌµð
 	data_manager->AppendParser("invoice_buyer_id", (new Parser())
 		->set_label("±¸¸ÅÀÚÀÇ ¾ÆÀÌµð")
-		->set_msg_info("±¸¸ÅÀÚÀÇ ¾ÆÀÌµð ÀÔ´Ï´Ù.")
-	);
-
-	// ÁÖ¹® Ã³¸® Á¤º¸ ¼ö·ÉÀÎÀÇ ÀüÈ­¹øÈ£
-		data_manager->AppendParser("invoice_recipient_phonenumber", (new Parser())
-		->set_label("¼ö·ÉÀÎÀÇ ÀüÈ­¹øÈ£")
-		->set_msg_info("¼ö·ÉÀÎÀÇ ÀüÈ­¹øÈ£ ÀÔ´Ï´Ù.")
-	);
-
-	// ÁÖ¹® Ã³¸® Á¤º¸ ¼ö·ÉÀÎÀÇ ÁÖ¼Ò
-	data_manager->AppendParser("invoice_recipient_address", (new Parser())
-		->set_label("¼ö·ÉÀÎÀÇ ÁÖ¼Ò")
-		->set_msg_info("¼ö·ÉÀÎÀÇ ÁÖ¼Ò ÀÔ´Ï´Ù.")
+		->set_msg_info("±¸¸ÅÀÚÀÇ ¾ÆÀÌµð ÀÔ´Ï´Ù.\n")
 	);
 
 	// ÁÖ¹® Ã³¸® Á¤º¸ ±¸¸Å ³¯Â¥
@@ -214,26 +205,26 @@ void Program::SetParser()
 	// ÁÖ¹® Ã³¸® Á¤º¸ »óÇ° °íÀ¯ ¹øÈ£
 	data_manager->AppendParser("invoice_product_id", (new Parser())
 		->set_label("»óÇ° °íÀ¯ ¹øÈ£")
-		->set_msg_info("±¸¸ÅÇÑ »óÇ° °íÀ¯ ¹øÈ£ ÀÔ´Ï´Ù.")
+		->set_msg_info("±¸¸ÅÇÑ »óÇ° °íÀ¯ ¹øÈ£ ÀÔ´Ï´Ù.\n")
 	);
 
 	// ÁÖ¹® Ã³¸® Á¤º¸ »óÇ° ¼ö·®
 	data_manager->AppendParser("invoice_product_count", (new Parser())
 		->set_label("»óÇ° ¼ö·®")
-		->set_regex(LR"(^[1-9][0-9]*$)")
-		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.")
+		->set_regex(LR"(^[0-9]*[1-9]$)")
+		->set_msg_error("¼ýÀÚ·Î ±¸¼ºµÈ ±æÀÌ°¡ 1 ÀÌ»óÀÇ ¹®ÀÚ¿­ÀÌ¾î¾ß ÇÕ´Ï´Ù.\n")
 	);
 #pragma endregion
 
 
 	data_manager->AppendParser("MENU_MENUSELECTION", (new Parser())
 		->set_regex(LR"(\d)")
-		->set_msg_error("¸Þ´º¿¡ Ç¥½ÃµÈ ¹øÈ£ Áß ÇÏ³ª¸¦ °í¸£¼¼¿ä.")
+		->set_msg_error("¸Þ´º¿¡ Ç¥½ÃµÈ ¹øÈ£ Áß ÇÏ³ª¸¦ °í¸£¼¼¿ä.\n")
 	);
 
 	data_manager->AppendParser("MENU_TABLE", (new Parser())
 		->set_regex(LR"(^[0-9a-zA-Z]$)")
-		->set_msg_error("¸Þ´º¿¡ Ç¥½ÃµÈ ¹øÈ£ ¶Ç´Â ¾ËÆÄºª Áß ÇÏ³ª¸¦ °í¸£¼¼¿ä.")
+		->set_msg_error("¸Þ´º¿¡ Ç¥½ÃµÈ ¹øÈ£ ¶Ç´Â ¾ËÆÄºª Áß ÇÏ³ª¸¦ °í¸£¼¼¿ä.\n")
 	);
 }
 #pragma endregion
@@ -257,7 +248,6 @@ void Program::SetMenu()
 		string input = IO.input();
 
 		if (input == "y") {
-			SaveCSV();
 			exit(0);
 		}
 		}));
@@ -409,6 +399,8 @@ void Program::SetMenu()
 			
 			//ÁÖ¹® Ã³¸® Á¤º¸ ¸ñ·Ï
 			account.push_back("");
+			account.push_back("0");
+			account.push_back("0"); 
 
 			string input = IO.input("\n°èÁ¤À» »ý¼ºÇÏ½Ã°Ú½À´Ï±î? (y / n)");
 
@@ -573,12 +565,7 @@ void Program::SetMenu()
 			menu_manager->PrintCommand(); 
 			IO.print_line(); 
 			IO.print_aligned_center("[ »óÇ° µî·Ï Á¤º¸ ]");
-
-			IO.print(format("°íÀ¯¹øÈ£ : {0}\n", target->id));
-			IO.print(format("Á¦¸ñ : {0}\n", target->title));
-			IO.print(format("Àå¸£ : {0}\n", target->genre));
-			IO.print(format("ÀúÀÚ : {0}\n", target->author));
-			IO.print(format("°¡°Ý : {0}\n", target->price));
+			IO.print(target->ToString());
 			IO.print(format("Àç°í : {0}\n", target->count));
 
 			IO.print_line();
@@ -635,6 +622,11 @@ void Program::SetMenu()
 						if (input != "") {
 							product[i + 1] = input;
 						}
+						else {  
+							IO.rollback(checkpoint);
+
+							IO.print(format("{} : {}", parser->label, product[i + 1] + "\n"));
+						}
 
 						break;
 					}
@@ -659,7 +651,7 @@ void Program::SetMenu()
 				}
 			}
 
-			string input = IO.input("»óÇ° µî·Ï Á¤º¸¸¦ ¼öÁ¤ÇÏ½Ã°Ú½À´Ï±î? (y / n)");
+			string input = IO.input("\n»óÇ° µî·Ï Á¤º¸¸¦ ¼öÁ¤ÇÏ½Ã°Ú½À´Ï±î? (y / n)");
 
 			if (input == "y") {
 				*target = Product(product);
@@ -886,11 +878,7 @@ void Program::SetMenu()
 			IO.print(format("±¸¸Å ³¯Â¥ : {0}\n", target->date));
 
 			IO.print("\n[ »óÇ° »ó¼¼ Á¤º¸ ]\n");
-			IO.print(format("°íÀ¯ ¹øÈ£ : {0}\n", product->id));
-			IO.print(format("Á¦¸ñ : {0}\n", product->title));
-			IO.print(format("Àå¸£ : {0}\n", product->genre));
-			IO.print(format("ÀúÀÚ : {0}\n", product->author));
-			IO.print(format("°¡°Ý : {0}¿ø\n", product->price));
+			IO.print(product->ToString());
 
 			IO.print("\n[ ÁÖ¹®ÀÚ Á¤º¸ ]\n");
 			IO.print(format("¾ÆÀÌµð : {0}\n", account->id));
@@ -1030,12 +1018,7 @@ void Program::SetMenu()
 			menu_manager->PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ »óÇ° µî·Ï Á¤º¸ ]");
-
-			IO.print(format("°íÀ¯¹øÈ£ : {0}\n", target->id));
-			IO.print(format("Á¦¸ñ : {0}\n", target->title));
-			IO.print(format("Àå¸£ : {0}\n", target->genre));
-			IO.print(format("ÀúÀÚ : {0}\n", target->author));
-			IO.print(format("°¡°Ý : {0}\n", target->price));
+			IO.print(target->ToString());
 			IO.print(format("Àç°í : {0}\n", target->count));
 
 			IO.print_line();
@@ -1070,50 +1053,88 @@ void Program::SetMenu()
 		[=](MenuIO& IO, Product* target) {
 			menu_manager->PrintCommand();
 			IO.print_line();
-			IO.print_aligned_center("[ »óÇ° ±¸¸Å ]");
+			IO.print_aligned_center("[ »óÇ° ±¸¸Å ]"); 
+
 			int count, price, coupon_count, final_price;
-			string input;
+			string recipient_phone_number, recipient_address;
 			Account* user = shop_manager->GetCurrentAccount();
-			vector<string> invoice = { user->id,user->phone_number,user->address, today(), to_string(target->id)};
-			IO.print_line(); 
-			IO.print("[»óÇ° »ó¼¼ Á¤º¸]\n");
-			IO.print(format("°íÀ¯¹øÈ£ : {0}\n", target->id));
-			IO.print(format("Á¦¸ñ : {0}\n", target->title));
-			IO.print(format("Àå¸£ : {0}\n", target->genre));
-			IO.print(format("ÀúÀÚ : {0}\n", target->author));
-			IO.print(format("°¡°Ý : {0}\n", target->price));
+
+			vector<string> invoice = { user->id, "", "", today(), to_string(target->id)};
+
+			string input;
+
 			IO.print_line();
+			IO.print("[ »óÇ° »ó¼¼ Á¤º¸ ]\n");
+			IO.print(target->ToString());
+			IO.print(format("Àç°í : {0}\n", target->count));
+			IO.print_line();
+
 			auto checkpoint = IO.checkpoint();
+
 			while (true) {
 				input = IO.input("ÁÖ¹® ¼ö·®À» ÀÔ·ÂÇÏ¼¼¿ä.");
+
 				if (data_manager->GetParser("invoice_product_count")->Check(input)) {
 					if (target->count >= stoi(input))
 					{
 						count = stoi(input);
+
 						break;
 					}
 					else {
 						IO.print("ÁÖ¹® ¼ö·®À» ÃÊ°úÇß½À´Ï´Ù.\n");
 					}
 				}
-				else
+				else {
 					IO.print(data_manager->GetParser("invoice_product_count")->msg_error);
-				
+				}
+
 				IO.pause();
 				IO.rollback(checkpoint);
 			}
 			IO.print_line();
-			IO.print("[ÁÖ¹®ÀÚ Á¤º¸]\n");
+			IO.print("[ ÁÖ¹®ÀÚ Á¤º¸ ]\n");
 			IO.print(format("ÀÌ¸§ : {0}\n", user->name));
-			IO.print(format("ÀüÈ­¹øÈ£ : {0}\n", phone_number(user->phone_number)));
-			IO.print(format("ÁÖ¼Ò : {0}\n", user->address));
-			IO.print_line();
-			IO.print("[°áÁ¦±Ý¾×]\n");
-			IO.print(format("{0}¿ø X {1}±Ç = {2}¿ø\n", target->price, count, price = target->price*count));
-			IO.print_line();
+			 
 			checkpoint = IO.checkpoint();
 			while (true) {
-				input = IO.input(format("»ç¿ëÇÏ½Ç ÄíÆù °³¼ö¸¦ ÀÔ·ÂÇÏ¼¼¿ä\nº¸À¯ ÄíÆù °³¼ö : {0}°³",user->coupon_count));
+				input = IO.input("", "ÀüÈ­¹øÈ£");
+
+				if (data_manager->GetParser("account_phone_number")->Check(input) || input == "") { 
+					IO.rollback(checkpoint); 
+					IO.print(format("{} : {}", data_manager->GetParser("account_phone_number")->label, phone_number(recipient_phone_number = input == "" ? user->phone_number : input) + "\n"));
+
+					break;
+				}
+				else {
+					IO.print(data_manager->GetParser("account_phone_number")->msg_error);
+				}
+
+				IO.pause();
+				IO.rollback(checkpoint);
+			} 
+
+			checkpoint = IO.checkpoint();
+			
+			recipient_address = IO.input(data_manager->GetParser("account_address"));
+			if (recipient_address == "") { 
+				IO.rollback(checkpoint);
+
+				IO.print(format("{} : {}", data_manager->GetParser("account_address")->label, recipient_address = user->address + "\n"));
+			}
+ 
+			IO.print_line(false);
+			IO.print("[ °áÁ¦±Ý¾× ]\n");
+			IO.print(format("{0}¿ø X {1}±Ç = {2}¿ø\n", target->price, count, price = target->price*count));
+			IO.print_line();
+
+			checkpoint = IO.checkpoint();
+
+			while (true) {
+				IO.print_aligned_center("»ç¿ëÇÏ½Ç ÄíÆù °³¼ö¸¦ ÀÔ·ÂÇÏ¼¼¿ä");
+				IO.print_aligned_center(format("º¸À¯ ÄíÆù °³¼ö : {0}°³", user->coupon_count));
+
+				string input = IO.input();
 				if (data_manager->GetParser("account_coupon_count")->Check(input)) {
 					coupon_count = stoi(input);
 					if (user->coupon_count >= coupon_count)
@@ -1128,7 +1149,7 @@ void Program::SetMenu()
 						}					
 					}
 					else {
-						IO.print("ÀÔ·ÂÇÑ ¼ö·®ÀÌ º¸À¯ÇÑ ÄíÆù °³¼ö¸¦ ÃÊ°úÇß½À´Ï´Ù.");
+						IO.print("ÀÔ·ÂÇÑ ¼ö·®ÀÌ º¸À¯ÇÑ ÄíÆù °³¼ö¸¦ ÃÊ°úÇß½À´Ï´Ù.\n");
 					}
 				}
 				else {
@@ -1138,11 +1159,14 @@ void Program::SetMenu()
 				IO.rollback(checkpoint);
 			}
 			IO.print_line();
-			final_price = price - 3000*coupon_count >= 0 ? price - 3000 * coupon_count : 0 ;
+
+			final_price = max(price - 3000 * coupon_count, 0);
 			
 			IO.print(format("ÃÖÁ¾ °áÁ¦ ±Ý¾× : {0}\n",final_price));
 			IO.print_line();
-			input = IO.input("»óÇ°À» ÁÖ¹®ÇÏ½Ã°Ú½À´Ï±î?(y / n)");
+
+			input = IO.input("»óÇ°À» ÁÖ¹®ÇÏ½Ã°Ú½À´Ï±î? (y / n)");
+
 			if (input == "y") {
 				int id = (int)shop_manager->GetInvoiceList().size();
 				target->count -= count; //Á¦Ç° °³¼ö ¾÷µ¥ÀÌÆ®
@@ -1151,11 +1175,18 @@ void Program::SetMenu()
 				invoice.push_back(to_string(coupon_count));
 				invoice.push_back(to_string(final_price));
 				invoice.push_back("0");
-				invoice.insert(invoice.begin(), to_string(id));				
-				shop_manager->AddInvoice(new Invoice(invoice));
-				user->invoice_id_list.push_back(id);
+				invoice.insert(invoice.begin(), to_string(id));	
+
+				Invoice* result = new Invoice(invoice);
+
+				result->recipient_phone_number = recipient_phone_number;
+				result->recipient_address = recipient_address;
+
+				shop_manager->AddInvoice(result);
+				user->invoice_id_list.insert(user->invoice_id_list.begin(), id);
+
+				IO.print("\n»óÇ°À» ±¸¸ÅÇÏ¿´½À´Ï´Ù.\n");
 				IO.pause();
-				IO.print("»óÇ°À» ±¸¸ÅÇÏ¿´½À´Ï´Ù.\n");
 			}
 		}
 	));
@@ -1176,7 +1207,7 @@ void Program::SetMenu()
 
 			IO.print_line();
 
-			string input = IO.input("ÇØ´ç »óÇ°À» ¹ÝÇ°ÇÏ½Ã°Ú½À´Ï±î?(y / n)\n(»ç¿ëÇÑ ÄíÆùÀº µ¹·Á¹ÞÀ» ¼ö ¾ø°í, ÃÖÁ¾ °áÁ¦±Ý¾×¸¸ µ¹·Á¹Þ½À´Ï´Ù.)");
+			string input = IO.input("ÇØ´ç »óÇ°À» ¹ÝÇ°ÇÏ½Ã°Ú½À´Ï±î? (y / n)\n(»ç¿ëÇÑ ÄíÆùÀº µ¹·Á¹ÞÀ» ¼ö ¾ø°í, ÃÖÁ¾ °áÁ¦±Ý¾×¸¸ µ¹·Á¹Þ½À´Ï´Ù.)");
 
 			if (input == "y") {
 				if (product->deleted) {
@@ -1184,7 +1215,7 @@ void Program::SetMenu()
 				}
 				product->count += target->product_count;
 				
-				IO.print("ÇØ´ç »óÇ°ÀÌ ¹ÝÇ°µÇ¾ú½À´Ï´Ù.");
+				IO.print("ÇØ´ç »óÇ°ÀÌ ¹ÝÇ°µÇ¾ú½À´Ï´Ù.\n");
 				IO.pause();
 
 			}

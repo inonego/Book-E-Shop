@@ -105,7 +105,7 @@ inline T MenuIO::input(Parser* parser)
 			}
 		}
 		else {
-			this->print(parser->msg_error + '\n'); this->pause();
+			this->print(parser->msg_error); this->pause();
 
 			this->rollback(checkpoint);
 		}

@@ -138,6 +138,18 @@ vector<string> Product::ToArray()
 	return (vector<string> { to_string(id), title, genre, author, to_string(price), to_string(count), deleted ? "TRUE" : "FALSE" });
 }
 
+string Product::ToString()
+{
+	string result = "";
+	result += format("고유번호 : {0}\n", this->id);
+	result += format("제목 : {0}\n", this->title);
+	result += format("장르 : {0}\n", this->genre);
+	result += format("저자 : {0}\n", this->author);
+	result += format("가격 : {0}\n", this->price);
+
+	return result;
+}
+
 vector<string> Account::ToArray()
 {  
 	/*
@@ -152,6 +164,11 @@ vector<string> Account::ToArray()
 	*/
 
 	return (vector<string> { name, id, password, phone_number, address, join(invoice_id_list,"/"), to_string(coupon_count), to_string(accumulated) });
+}
+
+string Account::ToString()
+{
+	return string();
 }
 
 vector<string> Invoice::ToArray()
@@ -172,4 +189,9 @@ vector<string> Invoice::ToArray()
 
 	return (vector<string> { to_string(id), buyer_id, recipient_phone_number, recipient_address, date,
 							 to_string(product_id), to_string(product_count), to_string(price), to_string(coupon_count), to_string(final_price), to_string(state)  });
+}
+
+string Invoice::ToString()
+{
+	return string();
 }

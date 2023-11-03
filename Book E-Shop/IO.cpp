@@ -106,7 +106,7 @@ string MenuIO::input(string msg_info, string label)
 	string input;
 
 	while (true) {
-		if (!msg_info.empty()) this->print(msg_info + "\n");
+		if (!msg_info.empty()) this->print_aligned_center(msg_info);
 
 		this->print(label + " : ");
 

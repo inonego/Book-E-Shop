@@ -21,6 +21,8 @@ public:
 
 	// 데이터 요소를 배열로 변환합니다.
 	virtual vector<string> ToArray() = 0;
+
+	virtual string ToString() = 0;
 };
 
 // 상품 등록 정보
@@ -39,6 +41,7 @@ public:
 
 	virtual string GetKey() override;
 	virtual vector<string> ToArray() override;
+	virtual string ToString() override;
 };
 
 
@@ -61,6 +64,7 @@ public:
 
 	virtual string GetKey() override; 
 	virtual vector<string> ToArray() override;
+	virtual string ToString() override;
 };
 
 enum InvoiceState {
@@ -91,4 +95,5 @@ public:
 
 	virtual string GetKey() override; 
 	virtual vector<string> ToArray() override;
+	virtual string ToString() override;
 };
