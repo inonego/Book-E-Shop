@@ -23,6 +23,16 @@ public:
 	Account* GetCurrentAccount() { return current_user; } 
 	const Account* const GetAdminAccount() { return admin; } 
 
+	const bool IsProductRegisterable(int id , string title, string author) {
+		for (Product* product : product_list) {
+			if (product->id != id && product->title == title && product->author == author) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	Product* GetProduct(int id, bool all = false) {
 		auto& list = all ? product_list : live_product_list;
 

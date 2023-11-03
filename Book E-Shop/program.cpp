@@ -55,8 +55,9 @@ void Program::LoadCSV()
 void Program::SaveCSV() {
 	vector<vector<string>>raw_data;
 
-	for (size_t i = 0; i < shop_manager->GetProductList().size(); i++) {
-		raw_data.push_back(shop_manager->GetProductList()[i]->ToArray());
+	auto product_list = shop_manager->GetProductList(true);
+	for (size_t i = 0; i < product_list.size(); i++) {
+		raw_data.push_back(product_list[i]->ToArray());
 	}
 	data_manager->SaveCSV("./data/product.csv", raw_data);
 
@@ -525,8 +526,24 @@ void Program::SetMenu()
 
 			product.push_back(to_string(id));
 
+			auto checkpoint = IO.checkpoint();
+
 			for (int i = 0; i < parser_key.size(); i++) {
 				product.push_back(IO.input(data_manager->GetParser(parser_key[i])));
+
+				if (i == 2) {
+					if (!shop_manager->IsProductRegisterable(-1, product[1], product[3])) {
+						IO.print("같은 제목의 도서끼리는 저자까지 같을 수 없습니다.\n");
+						IO.pause();
+
+						IO.rollback(checkpoint);
+
+						product.clear();
+						product.push_back(to_string(id));
+						
+						i = -1;	continue;
+					}
+				}
 			}
 
 			product.push_back("FALSE");
@@ -534,8 +551,11 @@ void Program::SetMenu()
 			string input = IO.input("\n상품을 등록하시겠습니까? (y / n)");
 
 			if (input == "y") {
-				shop_manager->AddProduct(new Product(product));
-				
+				Product* result = new Product(product);
+
+				shop_manager->AddProduct(result);
+				shop_manager->EnableProduct(result);
+
 				IO.print(format("\n상품({})이 등록되었습니다.\n", id));
 				IO.pause();
 
@@ -602,6 +622,8 @@ void Program::SetMenu()
 
 			vector<string> parser_key = { "product_title", "product_genre", "product_author", "product_price", "product_count" };
 
+			auto checkpoint_start = IO.checkpoint();
+
 			for (int i = 0; i < parser_key.size(); i++) { 
 				auto checkpoint = IO.checkpoint();
 
@@ -624,6 +646,17 @@ void Program::SetMenu()
 						IO.rollback(checkpoint);
 					}
 				} 
+
+				if (i == 2) {
+					if (!shop_manager->IsProductRegisterable(target->id, product[1], product[3])) {
+						IO.print("같은 제목의 도서끼리는 저자까지 같을 수 없습니다.\n");
+						IO.pause();
+
+						IO.rollback(checkpoint_start);
+
+						i = -1;	continue;
+					}
+				}
 			}
 
 			string input = IO.input("상품 등록 정보를 수정하시겠습니까? (y / n)");
@@ -1085,7 +1118,7 @@ void Program::SetMenu()
 					coupon_count = stoi(input);
 					if (user->coupon_count >= coupon_count)
 					{				
-						int max_coupon_count = ceil(float(price) / 3000);
+						int max_coupon_count = (int)ceil(float(price) / 3000);
 						if (max_coupon_count < coupon_count) //최대 사용 가능 쿠폰보다 많으면
 						{
 							IO.print(format("쿠폰을 {0}개보다 많이 사용할 수 없습니다\n", max_coupon_count));
