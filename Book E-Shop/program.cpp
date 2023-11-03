@@ -217,7 +217,7 @@ void Program::SetParser()
 	// 주문 처리 정보 상품 수량
 	data_manager->AppendParser("invoice_product_count", (new Parser())
 		->set_label("상품 수량")
-		->set_regex(LR"(^[0-9]*[1-9]$)")
+		->set_regex(LR"(^[1-9]*[0-9]$)")
 		->set_msg_error("숫자로 구성된 길이가 1 이상의 문자열이어야 합니다.\n")
 	);
 #pragma endregion
@@ -345,7 +345,7 @@ void Program::SetMenu()
 
 			vector<string> account;
 			
-			vector<string> parser_key = { "account_name", "account_id", "account_password", "", "account_phonenumber", "account_address" };
+			vector<string> parser_key = { "account_name", "account_id", "account_password", "", "account_phone_number", "account_address" };
 
 			for (int i = 0; i < parser_key.size(); i++) {				
 				if (i == 1) {
@@ -441,10 +441,10 @@ void Program::SetMenu()
 
 		// 테이블 출력 형식 지정 
 		_template.header_func = []() -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<8}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
+			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<8}{4:<12}{5:<8}", product->id, limit(product->title, 18), product->genre, product->author, to_string(product->price) + "원", product->count);
+			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", product->id, limit(product->title, 18), product->genre, limit(product->author, 8), to_string(product->price) + "원", product->count);
 		};
 
 		// 메뉴 추가 및 기능
@@ -855,13 +855,13 @@ void Program::SetMenu()
 		TemplateTable<int> _template;
 		_template.SetName("구매 내역");
 		_template.header_func = []() -> string {
-			return format("{0:<12}{1:<20}{2:<8}{3:<12}{4:<10}", "구매 날짜", "제목", "저자", "결제 금액", "상태");
+			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<10}", "구매 날짜", "제목", "저자", "결제 금액", "상태");
 		};
 		_template.show_func = [](int id) -> string {
 			Invoice* invoice = shop_manager->GetInvoice(id);
 			Product* product = shop_manager->GetProduct(invoice->product_id);
 
-			return format("{0:<12}{1:<20}{2:<8}{3:<12}{4:<10}", invoice->date, limit(product->title, 18), product->author,
+			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<10}", invoice->date, limit(product->title, 18), limit(product->author, 8),
 															  to_string(product->price * invoice->product_count) + "원", invoice->GetState());
 		};
 
@@ -951,11 +951,11 @@ void Program::SetMenu()
 
 		// 테이블 출력 형식 지정 
 		_template.header_func = []() -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<8}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
+			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<8}{3:<8}{4:<12}{5:<8}", product->id, limit(product->title, 18), product->genre, product->author, to_string(product->price) + "원", product->count);
-		}; 
+			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", product->id, limit(product->title, 18), product->genre, limit(product->author, 8), to_string(product->price) + "원", product->count);
+		};
 
 		// 메뉴 추가 및 기능
 		_template.SubMenu('p', "상품 검색 및 장르 선택", []() {
