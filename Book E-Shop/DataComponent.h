@@ -1,14 +1,15 @@
 #pragma once
 
-#include<any>
+#include <any>
 #include <string> 
 #include <vector> 
-
+#include <chrono>
 #include <iostream>
 #include <sstream>
-
-using namespace std;
  
+using namespace std;
+using namespace chrono;
+
 class DataComponent
 {  
 public: 
@@ -83,7 +84,7 @@ public:
 	string buyer_id;
 	string recipient_phone_number;
 	string recipient_address;
-	string date;
+	chrono::system_clock::time_point date;
 	int product_id;
 	int product_count;
 	int price;

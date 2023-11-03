@@ -9,6 +9,8 @@
 MenuManager::MenuManager()
 	:
 	IO(MenuIO([=](MenuIO& IO, string input) -> bool {
+		on_refresh_func();
+
 		// 명령어 처리
 		if (!input.empty() && input[0] == ':') {
 			input.erase(0, 1);

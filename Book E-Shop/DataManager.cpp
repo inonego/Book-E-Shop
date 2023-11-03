@@ -39,6 +39,10 @@ vector<vector<string>> DataManager::ParseCSV(string path)
 
     // 데이터 요소에 해당하는 행의 문자열을 받아옵니다.
     while (getline(stream, input)) {
+        if (input.size() <= 1) {
+            return result;
+        } 
+
         vector<string> data;
         
         stringstream sstream(input); 

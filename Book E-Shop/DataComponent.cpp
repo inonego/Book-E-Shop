@@ -96,7 +96,9 @@ Invoice::Invoice(vector<string> data)
 	buyer_id = data[1];
 	recipient_phone_number = data[2];
 	recipient_address = data[3];
-	date = data[4];
+	 
+	date = string_to_date((data[4] == "") ? "00.01.01" : data[4]);
+
 	product_id = stoi(data[5]);
 	product_count = stoi(data[6]);
 	price = stoi(data[7]);
@@ -141,7 +143,7 @@ vector<string> Product::ToArray()
 string Product::ToString()
 {
 	string result = "";
-	result += format("고유번호 : {0}\n", this->id);
+	result += format("고유번호 : {0}\n", format("{:08}", this->id));
 	result += format("제목 : {0}\n", this->title);
 	result += format("장르 : {0}\n", this->genre);
 	result += format("저자 : {0}\n", this->author);
@@ -162,7 +164,7 @@ vector<string> Account::ToArray()
 		int coupon_count;
 		int accumulated;
 	*/
-
+ 
 	return (vector<string> { name, id, password, phone_number, address, join(invoice_id_list,"/"), to_string(coupon_count), to_string(accumulated) });
 }
 
@@ -187,7 +189,7 @@ vector<string> Invoice::ToArray()
 		InvoiceState state;
 	*/
 
-	return (vector<string> { to_string(id), buyer_id, recipient_phone_number, recipient_address, date,
+	return (vector<string> { format("{0:08}", id), buyer_id, recipient_phone_number, recipient_address, date_to_string(date),
 							 to_string(product_id), to_string(product_count), to_string(price), to_string(coupon_count), to_string(final_price), to_string(state)  });
 }
 
