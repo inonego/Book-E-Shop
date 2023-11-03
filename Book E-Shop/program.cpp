@@ -29,26 +29,32 @@ void Program::LoadCSV()
 {
 	// Product CSV 파일을 파싱합니다.
 	auto product_raw = data_manager->ParseCSV("./data/product.csv");
-	for (size_t i = 0; i < product_raw.size(); i++) {
-		// 생성된 Product 객체를 shop_manager에 추가합니다.
-		auto product = new Product(product_raw[i]);
+	if (product_raw.size() != 0) {
+		for (size_t i = 0; i < product_raw.size(); i++) {
+			// 생성된 Product 객체를 shop_manager에 추가합니다.
+			auto product = new Product(product_raw[i]);
 
-		shop_manager->AddProduct(product);
-		shop_manager->EnableProduct(product);
+			shop_manager->AddProduct(product);
+			shop_manager->EnableProduct(product);
+		}
 	}
 
 	// Account CSV 파일을 파싱합니다.
 	auto account_raw = data_manager->ParseCSV("./data/account.csv");
-	for (size_t i = 0; i < account_raw.size(); i++) {
-		// 생성된 Account 객체를 shop_manager에 추가합니다.
-		shop_manager->AddAccount(new Account(account_raw[i]));
+	if (account_raw.size() != 0) {
+		for (size_t i = 0; i < account_raw.size(); i++) {
+			// 생성된 Account 객체를 shop_manager에 추가합니다.
+			shop_manager->AddAccount(new Account(account_raw[i]));
+		}
 	}
 
 	// Invoice CSV 파일을 파싱합니다.
 	auto invoice_raw = data_manager->ParseCSV("./data/invoice.csv");
-	for (size_t i = 0; i < invoice_raw.size(); i++) {
-		// 생성된 Invoice 객체를 shop_manager에 추가합니다.
-		shop_manager->AddInvoice(new Invoice(invoice_raw[i]));
+	if (invoice_raw.size() != 0) {
+		for (size_t i = 0; i < invoice_raw.size(); i++) {
+			// 생성된 Invoice 객체를 shop_manager에 추가합니다.
+			shop_manager->AddInvoice(new Invoice(invoice_raw[i]));
+		}
 	}
 }
 
