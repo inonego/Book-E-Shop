@@ -553,7 +553,7 @@ void Program::SetMenu()
 			menu_manager->PrintCommand(); 
 			IO.print_line(); 
 			IO.print_aligned_center("[ 상품 등록 정보 ]");
-
+			IO.print("공백을 입력할 경우 기존의 값을 유지합니다\n");
 			IO.print(format("고유번호 : {0}\n", target->id));
 			IO.print(format("제목 : {0}\n", target->title));
 			IO.print(format("장르 : {0}\n", target->genre));
@@ -1113,6 +1113,7 @@ void Program::SetMenu()
 			if (input == "y") {
 				int id = (int)shop_manager->GetInvoiceList().size();
 				target->count -= count; //제품 개수 업데이트
+				user->coupon_count -= coupon_count;
 				invoice.push_back(to_string(count));
 				invoice.push_back(to_string(price));
 				invoice.push_back(to_string(coupon_count));
@@ -1150,7 +1151,8 @@ void Program::SetMenu()
 					shop_manager->EnableProduct(product);
 				}
 				product->count += target->product_count;
-				
+				target->state = REFUNDED;
+
 				IO.print("해당 상품이 반품되었습니다.");
 				IO.pause();
 
