@@ -39,6 +39,7 @@ private:
 
 	void RunMenuInternal(MenuCode menu_code);
 
+	function<void(void)> on_refresh_func;
 	function<void(MenuIO&)> common_header_func;
 public:   
 	MenuManager();
@@ -94,6 +95,7 @@ public:
 	void RunPreviousMenu();
 
 	void SetCommonHeader(function<void(MenuIO&)> common_header_func);
+	void SetOnRefresh(function<void(void)> on_refresh_func);
 }; 
 
 inline void MenuManager::RunMenuInternal(MenuCode menu_code)
@@ -158,4 +160,9 @@ inline void MenuManager::RunPreviousMenu()
 inline void MenuManager::SetCommonHeader(function<void(MenuIO&)> common_header_func)
 {
 	this->common_header_func = common_header_func;
+}
+
+inline void MenuManager::SetOnRefresh(function<void(void)> on_refresh_func)
+{
+	this->on_refresh_func = on_refresh_func;
 }
