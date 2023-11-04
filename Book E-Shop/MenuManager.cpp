@@ -11,6 +11,14 @@ MenuManager::MenuManager()
 	IO(MenuIO([=](MenuIO& IO, string input) -> bool {
 		on_refresh_func();
 
+		if (input.find(',') != std::string::npos) { 
+			IO.print("입력에 ',' 문자를 포함할 수 없습니다.\n");
+
+			IO.pause();
+
+			return false;
+		}
+
 		// 명령어 처리
 		if (!input.empty() && input[0] == ':') {
 			input.erase(0, 1);
