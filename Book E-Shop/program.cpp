@@ -805,7 +805,7 @@ void Program::SetMenu()
 			IO.print("\n");
 
 			IO.print(format("보유한 3000원 쿠폰 개수 : {}\n", target->coupon_count));
-			IO.print(format("다음 쿠폰까지 남은 금액 : {}원\n", target->accumulated));
+			IO.print(format("다음 쿠폰까지 남은 금액 : {}원\n", 50000 - target->accumulated));
 
 			IO.print_line();
 
@@ -916,7 +916,7 @@ void Program::SetMenu()
 	}
 
 	// 주문 상세 정보 메뉴화면
-	menu_manager->AppendMenu(MENU_INVOICE_INFO, new Menu<int>(
+	menu_manager->AppendMenu(MENU_INVOICE_INFO	, new Menu<int>(
 		[=](MenuIO& IO, int target_id) {
 			menu_manager->PrintCommand();
 			IO.print_line();
@@ -948,7 +948,7 @@ void Program::SetMenu()
 
 
 			//메뉴 분할
-			if (shop_manager->IsAdmin() && target->state != PURCHASED) {
+			if (shop_manager->IsAdmin() || target->state != PURCHASED) {
 				IO.print_line();
 				IO.pause();
 			}
