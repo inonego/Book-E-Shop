@@ -1,9 +1,9 @@
+#include "util.h"
+
 #include "program.h"
-#include "Util.h"
 
 #include <set>
 #include <format>
-#include <stdlib.h>
 
 DataManager* const Program::data_manager = new DataManager();
 MenuManager* const Program::menu_manager = new MenuManager();

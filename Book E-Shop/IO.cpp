@@ -1,5 +1,6 @@
+#include "util.h"
+
 #include "IO.h"
-#include "Util.h"
 #include "Parser.h" 
 
 #include <iostream> 

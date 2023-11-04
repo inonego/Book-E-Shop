@@ -1,6 +1,5 @@
+#include "util.h"
 #include "DataComponent.h"
-
-#include "Util.h"
 
 DataComponent::DataComponent() {}
 

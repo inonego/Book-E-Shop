@@ -1,5 +1,5 @@
+#include "util.h"
 #include "MenuManager.h"
-#include "Util.h"
 
 #include <format>
 #include <iostream>
