@@ -535,7 +535,15 @@ void Program::SetMenu()
 				}
 			}
 			 
-			menu_manager->RunMenu(next_menu_code, result);
+			if (result.size() == 0) {
+				IO.print("\n일치하는 상품이 없습니다.\n");
+				IO.pause();
+
+				menu_manager->RunMenu(MENU_A_PRODUCT_LIST, shop_manager->GetProductList());
+			}
+			else { 
+				menu_manager->RunMenu(next_menu_code, result);
+			} 
 		};
 
 		_template.Apply(MENU_A_PRODUCT_SEARCH);
@@ -1051,8 +1059,16 @@ void Program::SetMenu()
 					result.push_back(product);
 				}
 			}
-			 
-			menu_manager->RunMenu(next_menu_code, result);
+
+			if (result.size() == 0) {
+				IO.print("\일치하는 상품이 없습니다.\n");
+				IO.pause();
+
+				menu_manager->RunMenu(MENU_B_PRODUCT_LIST, shop_manager->GetProductList());
+			}
+			else {
+				menu_manager->RunMenu(next_menu_code, result);
+			} 
 		};
 
 		_template.Apply(MENU_B_PRODUCT_SEARCH);
