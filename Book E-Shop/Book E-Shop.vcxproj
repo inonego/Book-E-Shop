@@ -138,7 +138,8 @@
     <ClCompile Include="MenuManager.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="ShopManager.cpp" />
-    <ClCompile Include="Util.h" />
+    <ClCompile Include="util.cpp" />
+    <ClCompile Include="util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataComponent.h" />

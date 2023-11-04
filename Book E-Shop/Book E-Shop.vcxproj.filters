@@ -35,7 +35,7 @@
     <ClCompile Include="DataManager.cpp">
       <Filter>소스 파일\데이터 관리</Filter>
     </ClCompile>
-    <ClCompile Include="Util.h">
+    <ClCompile Include="util.h">
       <Filter>소스 파일\유틸</Filter>
     </ClCompile>
     <ClCompile Include="MenuManager.cpp">
@@ -49,6 +49,9 @@
     </ClCompile>
     <ClCompile Include="program.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="util.cpp">
+      <Filter>소스 파일\유틸</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

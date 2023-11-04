@@ -1,10 +1,11 @@
 #pragma once 
 
+#include "util.h"
+
 #include <any>
 #include <regex>
 #include <string>
 #include <functional>
-#include <locale>
 
 using namespace std;
 
@@ -27,9 +28,7 @@ public:
 
 	Parser* set_check(function<bool(string)> check) { this->check = check; return this; }
 	
-	bool Check(string input) { 
-		wstring input_w(input.begin(), input.end());
-		
-		return regex_match(input_w, ::wregex(regex)) && (check == nullptr || check(input));
+	bool Check(string input) {  
+		return regex_match(s2w(input), ::wregex(regex)) && (check == nullptr || check(input));
 	}
 };
