@@ -52,7 +52,6 @@ public:
 	Buffer* get_buffer();
 };
 
-
 class MenuIO : public IO {
 private:
 	function<bool(MenuIO&, string)> input_func;

@@ -2,7 +2,6 @@
 
 #include <atlconv.h> 
 
-using namespace ATL; 
 
 std::wstring s2w(const std::string& source) {
     USES_CONVERSION;
