@@ -1065,7 +1065,7 @@ void Program::SetMenu()
 			}
 
 			if (result.size() == 0) {
-				IO.print("\일치하는 상품이 없습니다.\n");
+				IO.print("\n일치하는 상품이 없습니다.\n");
 				IO.pause();
 
 				menu_manager->RunMenu(MENU_B_PRODUCT_LIST, shop_manager->GetProductList());
