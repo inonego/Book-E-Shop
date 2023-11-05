@@ -136,13 +136,13 @@ vector<string> Product::ToArray()
 	string author;
 	bool deleted;
 */
-	return (vector<string> { to_string(id), title, genre, author, to_string(price), to_string(count), deleted ? "TRUE" : "FALSE" });
+	return (vector<string> { format("{0:06}", id), title, genre, author, to_string(price), to_string(count), deleted ? "TRUE" : "FALSE" });
 }
 
 string Product::ToString()
 {
 	string result = "";
-	result += format("고유번호 : {0}\n", format("{:08}", this->id));
+	result += format("제품 고유번호 : {0}\n", format("{:06}", this->id));
 	result += format("제목 : {0}\n", this->title);
 	result += format("장르 : {0}\n", this->genre);
 	result += format("저자 : {0}\n", this->author);

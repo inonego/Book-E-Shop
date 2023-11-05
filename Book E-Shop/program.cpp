@@ -480,7 +480,7 @@ void Program::SetMenu()
 			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", product->id, limit(product->title, 18), product->genre, limit(product->author, 8), to_string(product->price) + "원", product->count);
+			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", format("{0:06}",product->id), limit(product->title, 18), product->genre, limit(product->author, 8), to_string(product->price) + "원", product->count);
 		};
 
 		// 메뉴 추가 및 기능
@@ -946,7 +946,7 @@ void Program::SetMenu()
 			IO.print(format("주소 : {0}\n", target->recipient_address));
 
 			IO.print("\n");
-			IO.print(format("상품 고유 번호 : {0}\n", format("{:06}", target->product_id)));
+			IO.print(format("주문 고유 번호 : {0}\n", format("{:08}", target->product_id)));
 			IO.print(format("상품 수량 : {0}\n", target->product_count));
 			IO.print(format("결제 금액 : {0}원\n", target->price));
 			IO.print(format("사용한 3000원 쿠폰 개수 : {0}개\n", target->coupon_count));
@@ -1007,7 +1007,7 @@ void Program::SetMenu()
 			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", product->id, limit(product->title, 18), product->genre, limit(product->author, 8), to_string(product->price) + "원", product->count);
+			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", format("{0:06}", product->id), limit(product->title, 18), product->genre, limit(product->author, 8), to_string(product->price) + "원", product->count);
 		};
 
 		// 메뉴 추가 및 기능
