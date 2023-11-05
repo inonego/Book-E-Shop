@@ -58,7 +58,7 @@ private:
 public:
 	MenuIO(function<bool(MenuIO&, string)> input_func) : input_func(input_func) {}
 
-	int width = 60;
+	int width = 80;
 
 	void print_aligned_center(string text);
 

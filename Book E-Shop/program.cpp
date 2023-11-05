@@ -356,7 +356,7 @@ void Program::SetMenu()
 					}
 					else {
 						menu_manager->SetCommonHeader([=](MenuIO& IO) {
-							IO.print_aligned_center(format("{}님이 접속하였습니다.", shop_manager->GetCurrentAccount()->name));
+							IO.print_aligned_center(format("{}님이 접속하였습니다.", limit(shop_manager->GetCurrentAccount()->name,60)));
 						});
 						menu_manager->RunMenu(MENU_BUYER);
 					}
@@ -480,7 +480,7 @@ void Program::SetMenu()
 			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", format("{0:06}",product->id), limit(product->title, 18), product->genre, limit(product->author, 8), to_string(product->price) + "원", product->count);
+			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", format("{0:06}",product->id), limit(product->title, 18), limit(product->genre,8) , limit(product->author, 8), limit(to_string(product->price),10) + "원", limit(to_string(product->count),6));
 		};
 
 		// 메뉴 추가 및 기능
@@ -519,7 +519,7 @@ void Program::SetMenu()
 			return "장르";
 		};
 		_template.show_func = [](string genre) -> string {
-			return genre;
+			return limit(genre,80);
 		};
 		 
 		_template.next_menu_code = MENU_A_PRODUCT_LIST; 
@@ -749,10 +749,10 @@ void Program::SetMenu()
 		TemplateTable<Account*> _template;
 		_template.SetName("고객 목록");
 		_template.header_func = []() -> string {
-			return format("{0:<16}{1:<8}{2:<16}", "아이디", "이름", "전화번호");
+			return format("{0:<16}{1:<16}{2:<16}", "아이디", "이름", "전화번호");
 		};
 		_template.show_func = [](Account* product) -> string {
-			return format("{0:<16}{1:<8}{2:<16}", product->id, product->name, phone_number(product->phone_number));
+			return format("{0:<16}{1:<16}{2:<16}", limit(product->id,14), limit(product->name,14),phone_number(product->phone_number));
 		};
 		_template.SubMenu('p', "고객 검색", [=]() { menu_manager->RunMenu(MENU_A_ACCOUNT_SEARCH);  });
 
@@ -805,10 +805,10 @@ void Program::SetMenu()
 			IO.print_line();
 			IO.print_aligned_center("[ 고객 계정 정보 ]");
 
-			IO.print(format("이름 : {0}\n", target->name));
-			IO.print(format("아이디 : {0}\n", target->id));
-			IO.print(format("전화번호 : {0}\n", phone_number(target->phone_number)));
-			IO.print(format("주소 : {0}\n", target->address));
+			IO.print(format("이름 : {0}\n", limit(target->name,80)));
+			IO.print(format("아이디 : {0}\n", limit(target->id,80)));
+			IO.print(format("전화번호 : {0}\n", phone_number(target->phone_number),80));
+			IO.print(format("주소 : {0}\n", limit(target->address,80)));
 
 			IO.print("\n");
 
@@ -908,14 +908,14 @@ void Program::SetMenu()
 		TemplateTable<int> _template;
 		_template.SetName("구매 내역");
 		_template.header_func = []() -> string {
-			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<10}", "구매 날짜", "제목", "저자", "결제 금액", "상태");
+			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<18}", "구매 날짜", "제목", "저자", "결제 금액", "상태");
 		};
 		_template.show_func = [](int id) -> string {
 			Invoice* invoice = shop_manager->GetInvoice(id);
 			Product* product = shop_manager->GetProduct(invoice->product_id);
 
-			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<10}", date_to_string(invoice->date), limit(product->title, 18), limit(product->author, 8),
-															  to_string(product->price * invoice->product_count) + "원", invoice->GetState());
+			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<18}", limit(date_to_string(invoice->date),10), limit(product->title, 18), limit(product->author, 8),
+				limit(to_string(invoice->final_price), 10) + "원", limit(invoice->GetState(),15));
 		};
 
 		_template.next_menu_code = MENU_INVOICE_INFO;
@@ -1007,7 +1007,7 @@ void Program::SetMenu()
 			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", format("{0:06}", product->id), limit(product->title, 18), product->genre, limit(product->author, 8), to_string(product->price) + "원", product->count);
+			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", format("{0:06}", product->id), limit(product->title, 18), limit(product->genre, 8), limit(product->author, 8), limit(to_string(product->price), 10) + "원", limit(to_string(product->count), 6));
 		};
 
 		// 메뉴 추가 및 기능
