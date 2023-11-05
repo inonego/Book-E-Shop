@@ -914,7 +914,7 @@ void Program::SetMenu()
 			Invoice* invoice = shop_manager->GetInvoice(id);
 			Product* product = shop_manager->GetProduct(invoice->product_id);
 
-			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<10}", invoice->date, limit(product->title, 18), limit(product->author, 8),
+			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<10}", date_to_string(invoice->date), limit(product->title, 18), limit(product->author, 8),
 															  to_string(product->price * invoice->product_count) + "¿ø", invoice->GetState());
 		};
 
