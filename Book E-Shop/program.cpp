@@ -477,10 +477,10 @@ void Program::SetMenu()
 
 		// 테이블 출력 형식 지정 
 		_template.header_func = []() -> string {
-			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
+			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", format("{0:06}",product->id), limit(product->title, 18), limit(product->genre,8) , limit(product->author, 8), limit(to_string(product->price),10) + "원", limit(to_string(product->count),6));
+			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", format("{0:06}",product->id), limit(product->title, 18), limit(product->genre,8) , limit(product->author, 18), limit(to_string(product->price),10) + "원", limit(to_string(product->count),6));
 		};
 
 		// 메뉴 추가 및 기능
@@ -1004,10 +1004,10 @@ void Program::SetMenu()
 
 		// 테이블 출력 형식 지정 
 		_template.header_func = []() -> string {
-			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
+			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](Product* product) -> string {
-			return format("{0:<10}{1:<20}{2:<10}{3:<10}{4:<12}{5:<8}", format("{0:06}", product->id), limit(product->title, 18), limit(product->genre, 8), limit(product->author, 8), limit(to_string(product->price), 10) + "원", limit(to_string(product->count), 6));
+			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", format("{0:06}", product->id), limit(product->title, 18), limit(product->genre, 8), limit(product->author, 18), limit(to_string(product->price), 10) + "원", limit(to_string(product->count), 6));
 		};
 
 		// 메뉴 추가 및 기능
