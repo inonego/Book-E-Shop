@@ -1308,8 +1308,9 @@ void Program::SetMenu()
 				IO.print("\n해당 상품이 반품되었습니다.\n");
 				IO.pause();
 
+				menu_manager->RunMenu(MENU_INVOICE_LIST, account->invoice_id_list);
+
 			}
-			menu_manager->RunMenu(MENU_INVOICE_LIST, account->invoice_id_list);
 		}
 	));
 #pragma endregion
