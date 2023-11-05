@@ -713,7 +713,7 @@ void Program::SetMenu()
 			if (input == "y") {
 				*target = Product(product);
 
-				IO.print(format("상품({})의 등록 정보가 수정되었습니다.\n", target->id));
+				IO.print(format("상품({})의 등록 정보가 수정되었습니다.\n", format("{0:06}",target->id)));
 
 				IO.pause();
 			}
