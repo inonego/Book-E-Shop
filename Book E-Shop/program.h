@@ -8,7 +8,8 @@
 
 class Program
 {
-private:
+private: 
+	static chrono::system_clock::time_point now;
 	static DataManager* const data_manager;
 	static MenuManager* const menu_manager;
 	static ShopManager* const shop_manager;
@@ -104,7 +105,7 @@ public:
 	public:  
 		int max_count = 10;  
 
-		MenuCode next_menu_code;
+		MenuCode next_menu_code = MENU_NONE;
 
 		function<string(void)> header_func;
 		function<string(T& target)> show_func;
@@ -184,29 +185,32 @@ public:
 					}
 					else {
 						// 데이터 요소 목록에서 선택
-						 if ('0' <= input && input <= '9') {
-							int n = page * setting.max_count + (input - '0');
+						if (next_menu_code != MENU_NONE) {
+							if ('0' <= input && input <= '9') {
+								int n = page * setting.max_count + (input - '0');
 
-							if (n < v.size()) {
-								if (setting.process_func != nullptr) {
-									// 처리하는 함수가 존재하면 선택한 요소를 처리합니다.
-									setting.process_func(IO, setting.next_menu_code, v[n]);
+								if (n < v.size()) {
+									if (setting.process_func != nullptr) {
+										// 처리하는 함수가 존재하면 선택한 요소를 처리합니다.
+										setting.process_func(IO, setting.next_menu_code, v[n]);
 
-									break;
-								}
-								else {
-									// 처리하는 함수가 존재하지 않으면 선택한 요소를 다음 메뉴로 넘깁니다.
-									menu_manager->RunMenu(setting.next_menu_code, v[n]);
+										break;
+									}
+									else {
+										// 처리하는 함수가 존재하지 않으면 선택한 요소를 다음 메뉴로 넘깁니다.
+										menu_manager->RunMenu(setting.next_menu_code, v[n]);
+									}
 								}
 							}
-						 } 
 
-						 if (setting.menu.find(input) != setting.menu.end()) {
-							 (setting.menu[input].second)();
-						 }
+							if (setting.menu.find(input) != setting.menu.end()) {
+								(setting.menu[input].second)();
+							}
 
-						IO.print("메뉴에 표시된 번호 또는 알파벳 중 하나를 고르세요.\n");
-						IO.pause();
+							IO.print("메뉴에 표시된 번호 또는 알파벳 중 하나를 고르세요.\n");
+
+							IO.pause();
+						}
 
 						IO.rollback(checkpoint);
 					} 

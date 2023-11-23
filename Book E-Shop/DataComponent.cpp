@@ -55,16 +55,23 @@ Account::Account(vector<string> data)
 	phone_number = data[3];
 	address = data[4];
 	 
-	stringstream sstream(data[5]);
-
+	stringstream sstream; 
 	string input;
 
+	sstream.str(data[5]);
 	while (getline(sstream, input, '/')) {
 		invoice_id_list.push_back(stoi(input));
-	} 
-	
-	coupon_count = stoi(data[6]);
-	accumulated = stoi(data[7]);
+	}  
+
+	sstream.str(data[6]);
+	while (getline(sstream, input, '/')) {
+		coupon_list.push_back(string_to_date(input));
+	}
+
+	sstream.str(data[7]); 
+	while (getline(sstream, input, '/')) {
+		recent_product_id_list.push_back(stoi(input));
+	}
 }
 
 
@@ -104,6 +111,8 @@ Invoice::Invoice(vector<string> data)
 	coupon_count = stoi(data[8]);
 	final_price = stoi(data[9]); 
 	state = (InvoiceState)stoi(data[10]);
+
+	confirm_date = string_to_date((data[11] == "") ? "00.01.01" : data[11]);
 }
 
 string Invoice::GetState()
@@ -111,10 +120,11 @@ string Invoice::GetState()
 	switch (this->state) {
 	case PURCHASED:
 		return "구매 확정 이전";
-	case CONFIRMED:
-		return "구매 확정";
 	case REFUNDED:
 		return "반품";
+	case CONFIRMED:
+	case CONFIRMED_V:
+		return format("구매 확정({0})", date_to_string(confirm_date));
 	}
 
 	return "";
@@ -164,14 +174,14 @@ vector<string> Account::ToArray()
 		int accumulated;
 	*/
  
-	return (vector<string> { name, id, password, phone_number, address, join(invoice_id_list,"/"), to_string(coupon_count), to_string(accumulated) });
+	return (vector<string> { name, id, password, phone_number, address, join(invoice_id_list,"/"), join(coupon_list, "/"), join(recent_product_id_list, "/"), });
 }
 
 string Account::ToString()
 {
 	return string();
 }
-
+ 
 vector<string> Invoice::ToArray()
 {  	
 	/*
@@ -189,10 +199,11 @@ vector<string> Invoice::ToArray()
 	*/
 
 	return (vector<string> { format("{0:08}", id), buyer_id, recipient_phone_number, recipient_address, date_to_string(date),
-							 to_string(product_id), to_string(product_count), to_string(price), to_string(coupon_count), to_string(final_price), to_string(state)  });
+							 to_string(product_id), to_string(product_count), to_string(price), to_string(coupon_count), to_string(final_price), to_string(state), date_to_string(confirm_date), });
 }
 
 string Invoice::ToString()
 {
 	return string();
 }
+ 

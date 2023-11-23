@@ -60,22 +60,27 @@ public:
 	string phone_number;
 	string address;
 	vector<int> invoice_id_list;
-	int coupon_count;
-	int accumulated;
+	vector<chrono::system_clock::time_point> coupon_list; 
+	vector<int> recent_product_id_list;
+
+	int accumulated = 0;
 
 	virtual string GetKey() override; 
 	virtual vector<string> ToArray() override;
-	virtual string ToString() override;
+	virtual string ToString() override;  
 };
 
 enum InvoiceState {
 	PURCHASED = 0,
-	CONFIRMED = 1,
-	REFUNDED  = 2
+	REFUNDED  = 1,
+	CONFIRMED = 2,
+	CONFIRMED_V = 3
 };
 
 // 주문 처리 정보
 class Invoice : DataComponent {
+private:
+
 public:	
 	Invoice();
 	Invoice(vector<string> data);
@@ -85,6 +90,7 @@ public:
 	string recipient_phone_number;
 	string recipient_address;
 	chrono::system_clock::time_point date;
+	chrono::system_clock::time_point confirm_date;
 	int product_id;
 	int product_count;
 	int price;
@@ -92,7 +98,7 @@ public:
 	int final_price;
 	InvoiceState state;
 
-	string GetState();
+	string GetState(); 
 
 	virtual string GetKey() override; 
 	virtual vector<string> ToArray() override;

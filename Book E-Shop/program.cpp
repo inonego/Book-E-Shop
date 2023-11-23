@@ -5,6 +5,8 @@
 #include <set>
 #include <format>
 
+
+chrono::system_clock::time_point now = string_to_date("00.01.01");
 DataManager* const Program::data_manager = new DataManager();
 MenuManager* const Program::menu_manager = new MenuManager();
 ShopManager* const Program::shop_manager = new ShopManager();
@@ -32,23 +34,19 @@ void Program::LoadCSV()
 {
 	// Product CSV 파일을 파싱합니다.
 	auto product_raw = data_manager->ParseCSV("./data/product.csv");
-	if (product_raw.size() != 0) {
-		for (size_t i = 0; i < product_raw.size(); i++) {
-			// 생성된 Product 객체를 shop_manager에 추가합니다.
-			auto product = new Product(product_raw[i]);
+	for (size_t i = 0; i < product_raw.size(); i++) {
+		// 생성된 Product 객체를 shop_manager에 추가합니다.
+		auto product = new Product(product_raw[i]);
 
-			shop_manager->AddProduct(product);
-			shop_manager->EnableProduct(product);
-		}
+		shop_manager->AddProduct(product);
+		shop_manager->EnableProduct(product);
 	}
 
 	// Account CSV 파일을 파싱합니다.
 	auto account_raw = data_manager->ParseCSV("./data/account.csv");
-	if (account_raw.size() != 0) {
-		for (size_t i = 0; i < account_raw.size(); i++) {
-			// 생성된 Account 객체를 shop_manager에 추가합니다.
-			shop_manager->AddAccount(new Account(account_raw[i]));
-		}
+	for (size_t i = 0; i < account_raw.size(); i++) {
+		// 생성된 Account 객체를 shop_manager에 추가합니다. 
+		shop_manager->AddAccount(new Account(account_raw[i]));
 	}
 
 	// Invoice CSV 파일을 파싱합니다.
@@ -57,7 +55,7 @@ void Program::LoadCSV()
 	for (size_t i = 0; i < invoice_raw.size(); i++) {
 		// 생성된 Invoice 객체를 shop_manager에 추가합니다.
 		shop_manager->AddInvoice(new Invoice(invoice_raw[i]));
-	}
+	} 
 }
 
 void Program::SaveCSV() {
@@ -102,6 +100,12 @@ void Program::SetCommand()
 #pragma region Parser 구현
 void Program::SetParser()
 {
+	// 날짜
+	data_manager->AppendParser("date", (new Parser())
+		->set_label("날짜")
+		->set_regex(LR"(^[0-9]{2}.[0-9]{2}.[0-9]{2}$)")
+		->set_msg_error("날짜 형식이 올바르지 않습니다.\n")
+	);
 
 #pragma region 상품 등록 정보 Parser
 
@@ -239,40 +243,7 @@ void Program::SetParser()
 void Program::SetMenu()
 {
 	menu_manager->SetOnRefresh([=]() {
-		auto invoice_list = shop_manager->GetInvoiceList();
-
-		auto now = today();
-
-		for (int i = 0; i < invoice_list.size(); i++) {
-			int index = (int)invoice_list.size() - i - 1;
-
-			Invoice* invoice = invoice_list[index];
-
-			// 주문 확정을 만난 경우 더 이상 진행할 필요가 없습니다.
-			if (invoice->state != CONFIRMED) {
-				// 환불인 상태인 경우를 배제하고 구매 확정으로 변경합니다.
-				if (invoice->state == PURCHASED) {
-					// 7일이 지난 경우의 주문 처리 정보인지 확인합니다. 
-					if (day_diff(invoice->date, now) >= 7) {
-						invoice->state = CONFIRMED;
-
-						// 쿠폰 처리
-						Account* account = shop_manager->GetAccount(invoice->buyer_id);
-
-						account->accumulated += invoice->final_price;
-
-						while (account->accumulated >= 50000) {
-							account->accumulated -= 50000;
-
-							account->coupon_count += 1;
-						}
-					}
-				}
-			}
-			else {
-				break;
-			}
-		}
+		
 	});
 
 	menu_manager->SetCommonHeader([=](MenuIO& IO) {
@@ -280,6 +251,7 @@ void Program::SetMenu()
 	});
 
 #pragma region 공통 메뉴화면
+
 	menu_manager->AppendMenu(MENU_QUIT, new Menu([=](MenuIO& IO) {
 		menu_manager->ToggleCommand();
 		menu_manager->PrintCommand();
@@ -316,6 +288,38 @@ void Program::SetMenu()
 
 
 #pragma region 시작 메뉴화면
+	menu_manager->AppendMenu(MENU_DATE, new Menu([=](MenuIO& IO) {
+		menu_manager->ToggleCommand('q');
+		menu_manager->PrintCommand(); 
+
+		IO.print_line();
+		IO.print_aligned_center("[ 현재 날짜 입력 ]"); 
+
+		chrono::system_clock::time_point min_date = shop_manager->GetLastDate();
+
+		IO.print("현재 날짜(YY.MM.DD 형식)를 입력하세요.");
+		IO.print(format("(날짜는 {0} 당일 또는 그 이후여야 합니다.)", date_to_string(min_date)));
+
+		auto checkpoint = IO.checkpoint();
+
+		while (true) {
+			chrono::system_clock::time_point input = string_to_date(IO.input(data_manager->GetParser("date")));
+
+			if (min_date <= input) { 
+				shop_manager->UpdateAll(now);
+
+				menu_manager->RunMenu(MENU_START);
+			}
+			else
+			{
+				IO.print("날짜는 주어진 날짜 당일 또는 그 이후여야 합니다.\n");
+				IO.pause();
+
+				IO.rollback(checkpoint);
+			}
+		}
+	}));
+
 	// 시작 메뉴화면
 	{
 		TemplateMenuSelection _template;
@@ -441,8 +445,10 @@ void Program::SetMenu()
 			
 			//주문 처리 정보 목록
 			account.push_back("");
-			account.push_back("0");
-			account.push_back("0"); 
+			// 보유 쿠폰 목록
+			account.push_back("");
+			// 최근 본 상품 목록
+			account.push_back(""); 
 
 			string input = IO.input("\n계정을 생성하시겠습니까? (y / n)");
 
@@ -812,12 +818,12 @@ void Program::SetMenu()
 
 			IO.print("\n");
 
-			IO.print(format("보유한 3000원 쿠폰 개수 : {}\n", target->coupon_count));
+			IO.print(format("보유한 3000원 쿠폰 개수 : {}\n", target->coupon_list.size()));
 			IO.print(format("다음 쿠폰까지 남은 금액 : {}원\n", 50000 - target->accumulated));
 
 			IO.print_line();
 
-			IO.print_aligned_center("주문 처리 정보(O)     수정(M)");
+			IO.print_aligned_center("주문 처리 정보(O)     수정(M)      쿠폰 정보(C)");
 
 			IO.print_line();
 
@@ -834,6 +840,9 @@ void Program::SetMenu()
 					}
 					else if (command == 'm') {
 						menu_manager->RunMenu(MENU_ACCOUNT_INFO_M, target);
+					}
+					else if (command == 'm') {
+						menu_manager->RunMenu(MENU_ACCOUNT_COUPON, target->coupon_list);
 					}
 				}
 
@@ -962,7 +971,7 @@ void Program::SetMenu()
 			}
 			else { 
 				IO.print_line(false);
-				IO.print_aligned_center("반품(R)");
+				IO.print_aligned_center("구매 확정(C)     반품(R)");
 				IO.print_line();
 
 				auto checkpoint = IO.checkpoint();
@@ -970,7 +979,10 @@ void Program::SetMenu()
 				if (input.size() == 1) {
 					char command = tolower(input[0]);
 
-					if (command == 'r') {
+					if (command == 'c') {
+						menu_manager->RunMenu(MENU_B_CONFIRM, target);
+					}
+					else if (command == 'r') {
 						menu_manager->RunMenu(MENU_B_REFUND, target);
 					}
 				}
@@ -981,6 +993,22 @@ void Program::SetMenu()
 			}
 		}
 	));
+	 
+	// 쿠폰 목록 메뉴화면
+	{
+		TemplateTable<chrono::system_clock::time_point> _template;
+		_template.SetName("쿠폰 목록");
+		_template.header_func = []() -> string {
+			return format("{0:<12}{1:<12}{2:<12}", "쿠폰", "발급 날짜", "만료 날짜");
+		};
+		_template.show_func = [](chrono::system_clock::time_point date) -> string {
+			return format("{0:<12}{1:<12}{2:<12}", "3000원", date_to_string(date), date_to_string(date + std::chrono::days(shop_manager->COUPON_EXPIRE_DATE)));
+		};
+
+		_template.next_menu_code = MENU_NONE;
+
+		_template.Apply(MENU_ACCOUNT_COUPON);
+	}
 	#pragma endregion
 
 #pragma endregion
@@ -1216,12 +1244,12 @@ void Program::SetMenu()
 
 			while (true) {
 				IO.print_aligned_center("사용하실 쿠폰 개수를 입력하세요");
-				IO.print_aligned_center(format("보유 쿠폰 개수 : {0}개", user->coupon_count));
+				IO.print_aligned_center(format("보유 쿠폰 개수 : {0}개", user->coupon_list.size()));
 
 				string input = IO.input();
 				if (data_manager->GetParser("account_coupon_count")->Check(input)) {
 					coupon_count = stoi(input);
-					if (user->coupon_count >= coupon_count)
+					if (int(user->coupon_list.size()) >= coupon_count)
 					{				
 						int max_coupon_count = (int)ceil(float(price) / 3000);
 						if (max_coupon_count < coupon_count) //최대 사용 가능 쿠폰보다 많으면
@@ -1254,12 +1282,15 @@ void Program::SetMenu()
 			if (input == "y") {
 				int id = (int)shop_manager->GetInvoiceList().size();
 				target->count -= count; //제품 개수 업데이트
-				user->coupon_count -= coupon_count;
+				 
+				user->coupon_list.erase(user->coupon_list.begin(), user->coupon_list.begin() + coupon_count + 1);
+
 				invoice.push_back(to_string(count));
 				invoice.push_back(to_string(price));
 				invoice.push_back(to_string(coupon_count));
 				invoice.push_back(to_string(final_price));
 				invoice.push_back("0");
+				invoice.push_back("00.01.01");
 				invoice.insert(invoice.begin(), to_string(id));	
 
 				Invoice* result = new Invoice(invoice);
@@ -1279,7 +1310,27 @@ void Program::SetMenu()
 		}
 	));
 
-	//구매자 물건 반품
+	// 구매자 구매 확정
+	menu_manager->AppendMenu(MENU_B_CONFIRM, new Menu<Invoice*>([=](MenuIO& IO, Invoice* target) {
+		menu_manager->PrintCommand();
+
+		IO.print_line();
+		IO.print_aligned_center("[ 구매 확정 ]");
+		IO.print_aligned_center("구매 확정하시겠습니까? (y / n)");
+		IO.print_aligned_center("(구매 확정을 취소할 수 없으며 이후 반품을 할 수 없습니다.)");
+
+		string input = IO.input();
+
+		if (input == "y") {
+			Account* account = shop_manager->GetAccount(target->buyer_id);
+
+			shop_manager->Confirm(now, target);
+			
+			menu_manager->RunMenu(MENU_INVOICE_LIST, account->invoice_id_list);
+		}
+		}));
+
+	// 구매자 물건 반품
 	menu_manager->AppendMenu(MENU_B_REFUND, new Menu<Invoice*>(
 		[=](MenuIO& IO, Invoice* target) {
 			menu_manager->PrintCommand();
@@ -1287,7 +1338,6 @@ void Program::SetMenu()
 			IO.print_aligned_center("[ 반품 ]");
 
 			Product* product = shop_manager->GetProduct(target->product_id, true);
-			Account* account = shop_manager->GetAccount(target->buyer_id);
 
 			IO.print(format("결제금액 : {0}원\n", target->price));
 			IO.print(format("사용한 3000원 쿠폰 개수 : {0}개\n", target->coupon_count));
@@ -1308,8 +1358,9 @@ void Program::SetMenu()
 				IO.print("\n해당 상품이 반품되었습니다.\n");
 				IO.pause();
 
-				menu_manager->RunMenu(MENU_INVOICE_LIST, account->invoice_id_list);
+				Account* account = shop_manager->GetAccount(target->buyer_id);
 
+				menu_manager->RunMenu(MENU_INVOICE_LIST, account->invoice_id_list);
 			}
 		}
 	));

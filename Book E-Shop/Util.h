@@ -81,6 +81,20 @@ static std::string join(std::vector<std::string> array, std::string delimiter = 
     return result;
 }
 
+static std::string join(std::vector<std::chrono::system_clock::time_point> array, std::string delimiter = "") {
+    std::string result;
+
+    for (std::chrono::system_clock::time_point value : array) {
+        if (!result.empty()) {
+            result += delimiter;
+        }
+
+        result += date_to_string(value);
+    }
+
+    return result;
+}
+
 static std::string limit(std::string text, int width) {
     return (text.size() > width) ? std::format("{:.{}}...", text, width - 3) : std::format("{:.{}}", text, width);
 }
