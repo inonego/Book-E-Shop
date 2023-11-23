@@ -992,6 +992,7 @@ void Program::SetMenu()
 		_template.SetName("구매자 메뉴화면");
 		_template.ToggleCommand('l', 'q');
 		_template.SubMenu("상품 목록", [=]() { menu_manager->RunMenu(MENU_B_PRODUCT_LIST, shop_manager->GetProductList()); });
+		_template.SubMenu("최근 본 상품 목록", [=]() { menu_manager->RunMenu(MENU_B_PRODUCT_RECENT, shop_manager->GetCurrentAccount()->product_id_list); });
 		_template.SubMenu("고객 계정 정보", [=]() { menu_manager->RunMenu(MENU_ACCOUNT_INFO, shop_manager->GetCurrentAccount()); });
 		_template.Apply(MENU_BUYER);
 	}
@@ -1082,6 +1083,8 @@ void Program::SetMenu()
 	// 상품 등록 정보 메뉴화면
 	menu_manager->AppendMenu(MENU_B_PRODUCT_INFO, new Menu<Product*>(
 		[=](MenuIO& IO, Product* target) {
+			//최근 본 상품 업데이트 코드?
+			shop_manager->GetCurrentAccount()->updateList(target->id);
 			menu_manager->PrintCommand();
 			IO.print_line();
 			IO.print_aligned_center("[ 상품 상세 정보 ]");
@@ -1313,6 +1316,24 @@ void Program::SetMenu()
 			}
 		}
 	));
+
+	// 최근 본 상품 목록 메뉴화면
+	{
+		TemplateTable<Product*> _template;
+		_template.SetName("최근 본 상품 목록");
+
+		// 테이블 출력 형식 지정 
+		_template.header_func = []() -> string {
+			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
+		};
+		_template.show_func = [](Product* product) -> string {
+			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", format("{0:06}", product->id), limit(product->title, 18), limit(product->genre, 8), limit(product->author, 18), limit(to_string(product->price), 10) + "원", limit(to_string(product->count), 6));
+		};
+
+		_template.next_menu_code = MENU_B_PRODUCT_INFO;
+
+		_template.Apply(MENU_B_PRODUCT_RECENT);
+	}
 #pragma endregion
 }
 #pragma endregion

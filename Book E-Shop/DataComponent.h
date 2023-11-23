@@ -62,6 +62,10 @@ public:
 	vector<int> invoice_id_list;
 	int coupon_count;
 	int accumulated;
+	vector<int> product_id_list;	//최근 본 상품
+	const int MAX_SIZE = 15;
+
+	void updateList(int productId);
 
 	virtual string GetKey() override; 
 	virtual vector<string> ToArray() override;

@@ -47,6 +47,7 @@ Account::Account(vector<string> data)
 		vector<int> invoice_id_list;
 		int coupon_count;
 		int accumulated;
+		vector<int> product_id_list;
 	*/
 
 	name = data[0];
@@ -65,8 +66,24 @@ Account::Account(vector<string> data)
 	
 	coupon_count = stoi(data[6]);
 	accumulated = stoi(data[7]);
+
+	updateList(stoi(data[8]));
 }
 
+
+void Account::updateList(int productId)
+{
+	auto it = find(product_id_list.begin(), product_id_list.end(), productId);
+	if (it != product_id_list.end()) {
+		product_id_list.erase(it);
+	}
+
+	product_id_list.insert(product_id_list.begin(), productId);
+
+	if (product_id_list.size() > MAX_SIZE) {
+		product_id_list.pop_back();
+	}
+}
 
 string Account::GetKey()
 {
