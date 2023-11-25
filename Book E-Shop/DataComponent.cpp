@@ -32,6 +32,8 @@ string Product::GetKey()
 	return to_string(id);
 }
 
+const int Account::MAX_RECENT_SIZE = 15;
+
 Account::Account() {}
 
 Account::Account(string id, string password) : id(id), password(password) {}
@@ -180,6 +182,23 @@ vector<string> Account::ToArray()
 string Account::ToString()
 {
 	return string();
+}
+
+void Account::AddRecentProduct(int id)
+{
+	auto& list = recent_product_id_list;
+
+	auto it = find(list.begin(), list.end(), id);
+
+	if (it != list.end()) {
+		list.erase(it);
+	}
+
+	list.insert(list.begin(), id);
+
+	while (list.size() > MAX_RECENT_SIZE) {
+		list.pop_back();
+	}
 }
  
 vector<string> Invoice::ToArray()

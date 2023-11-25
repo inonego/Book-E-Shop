@@ -49,7 +49,9 @@ public:
 
 // 고객 계정 정보
 class Account : DataComponent {
-public:	
+private:
+	static const int MAX_RECENT_SIZE;
+public: 
 	Account();
 	Account(string id, string password);
 	Account(vector<string> data);
@@ -68,6 +70,7 @@ public:
 	virtual string GetKey() override; 
 	virtual vector<string> ToArray() override;
 	virtual string ToString() override;  
+	void AddRecentProduct(int id);
 };
 
 enum InvoiceState {

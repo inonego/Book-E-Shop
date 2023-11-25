@@ -86,5 +86,5 @@ public:
 	void UpdateCouponList(chrono::system_clock::time_point now, vector<chrono::system_clock::time_point>& coupon_list);
 	void UpdateInvoiceList(chrono::system_clock::time_point now, vector<int>& invoice_id_list);
 	void UpdateAll(chrono::system_clock::time_point now);
-	chrono::system_clock::time_point GetLastDate();
+	chrono::system_clock::time_point GetLastDate(); 
 };

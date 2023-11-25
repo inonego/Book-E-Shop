@@ -27,7 +27,7 @@ void ShopManager::Confirm(chrono::system_clock::time_point now, Invoice* invoice
 {
 	if (invoice->state != PURCHASED) return;
 	
-	invoice->state == CONFIRMED;
+	invoice->state = CONFIRMED;
 
 	bool couponed = false;
 	int accumulated = 0;
@@ -79,7 +79,7 @@ void ShopManager::UpdateCouponList(chrono::system_clock::time_point now, vector<
 void ShopManager::UpdateInvoiceList(chrono::system_clock::time_point now, vector<int>& invoice_id_list)
 {  
 	for (int i = 0; i < invoice_id_list.size(); i++) {
-		int index = invoice_id_list.size() - i - 1;
+		int index = (int)invoice_id_list.size() - i - 1;
 
 		Invoice* invoice = invoice_list[invoice_id_list[index]];
 
@@ -121,7 +121,7 @@ chrono::system_clock::time_point ShopManager::GetLastDate()
 		}
 
 		for (int i = 0; i < account->invoice_id_list.size(); i++) {
-			int index = account->invoice_id_list.size() - i - 1;
+			int index = (int)account->invoice_id_list.size() - i - 1;
 
 			Invoice* invoice = invoice_list[account->invoice_id_list[index]];
 			
@@ -146,5 +146,5 @@ chrono::system_clock::time_point ShopManager::GetLastDate()
 		}
 	} 
 
-	return ;
+	return result;
 }

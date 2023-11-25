@@ -1,18 +1,16 @@
-#include "util.h"
-
 #include "program.h"
 
 #include <set>
 #include <format>
 
-
-chrono::system_clock::time_point now = string_to_date("00.01.01");
+chrono::system_clock::time_point Program::now = string_to_date("00.01.01");
 DataManager* const Program::data_manager = new DataManager();
 MenuManager* const Program::menu_manager = new MenuManager();
 ShopManager* const Program::shop_manager = new ShopManager();
 
 void Program::CleanUp()
 {
+
 	delete data_manager;
 	delete menu_manager;
 	delete shop_manager;
@@ -306,7 +304,9 @@ void Program::SetMenu()
 			chrono::system_clock::time_point input = string_to_date(IO.input(data_manager->GetParser("date")));
 
 			if (min_date <= input) { 
-				shop_manager->UpdateAll(now);
+				Program::now = input;
+
+				shop_manager->UpdateAll(Program::now);
 
 				menu_manager->RunMenu(MENU_START);
 			}
@@ -1020,6 +1020,7 @@ void Program::SetMenu()
 		_template.SetName("구매자 메뉴화면");
 		_template.ToggleCommand('l', 'q');
 		_template.SubMenu("상품 목록", [=]() { menu_manager->RunMenu(MENU_B_PRODUCT_LIST, shop_manager->GetProductList()); });
+		_template.SubMenu("최근 본 상품 목록", [=]() { menu_manager->RunMenu(MENU_B_PRODUCT_RECENT, shop_manager->GetCurrentAccount()->recent_product_id_list); });
 		_template.SubMenu("고객 계정 정보", [=]() { menu_manager->RunMenu(MENU_ACCOUNT_INFO, shop_manager->GetCurrentAccount()); });
 		_template.Apply(MENU_BUYER);
 	}
@@ -1115,6 +1116,8 @@ void Program::SetMenu()
 			IO.print_aligned_center("[ 상품 상세 정보 ]");
 			IO.print(target->ToString());
 			IO.print(format("재고 : {0}\n", target->count));
+
+			shop_manager->GetCurrentAccount()->AddRecentProduct(target->id);
 
 			IO.print_line(false);
 
@@ -1308,7 +1311,40 @@ void Program::SetMenu()
 				IO.pause();
 			}
 		}
-	));
+	)); 
+
+	// 최근 본 상품 목록 메뉴화면
+	{
+		TemplateTable<int> _template;
+		_template.SetName("최근 본 상품 목록");
+
+		// 테이블 출력 형식 지정 
+		_template.header_func = []() -> string {
+			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
+		};
+		_template.show_func = [](int id) -> string {
+			Product* product = shop_manager->GetProduct(id);
+
+			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", format("{0:06}", product->id), limit(product->title, 18), limit(product->genre, 8), limit(product->author, 18), limit(to_string(product->price), 10) + "원", limit(to_string(product->count), 6));
+		};
+
+		_template.next_menu_code = MENU_B_PRODUCT_INFO;
+
+		_template.process_func = [=](MenuIO& IO, MenuCode next_menu_code, int id) { 
+			Product* product = shop_manager->GetProduct(id);
+
+			if (product->deleted) {
+				IO.print("제거된 상품입니다.\n");
+
+				menu_manager->RunMenu(MENU_B_PRODUCT_RECENT, id);
+			}
+			else {
+				menu_manager->RunMenu(next_menu_code, product); 
+			}
+		};
+
+		_template.Apply(MENU_B_PRODUCT_RECENT);
+	}
 
 	// 구매자 구매 확정
 	menu_manager->AppendMenu(MENU_B_CONFIRM, new Menu<Invoice*>([=](MenuIO& IO, Invoice* target) {
@@ -1324,7 +1360,7 @@ void Program::SetMenu()
 		if (input == "y") {
 			Account* account = shop_manager->GetAccount(target->buyer_id);
 
-			shop_manager->Confirm(now, target);
+			shop_manager->Confirm(Program::now, target);
 			
 			menu_manager->RunMenu(MENU_INVOICE_LIST, account->invoice_id_list);
 		}
