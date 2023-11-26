@@ -296,7 +296,7 @@ void Program::SetMenu()
 		chrono::system_clock::time_point min_date = shop_manager->GetLastDate();
 
 		IO.print("현재 날짜(YY.MM.DD 형식)를 입력하세요.");
-		IO.print(format("(날짜는 {0} 당일 또는 그 이후여야 합니다.)", date_to_string(min_date)));
+		IO.print(format("(날짜는 {0} 당일 또는 그 이후여야 합니다.)\n", date_to_string(min_date)));
 
 		auto checkpoint = IO.checkpoint();
 
@@ -808,6 +808,7 @@ void Program::SetMenu()
 	menu_manager->AppendMenu(MENU_ACCOUNT_INFO, new Menu<Account*>(
 		[=](MenuIO& IO, Account* target) {
 			menu_manager->PrintCommand();
+
 			IO.print_line();
 			IO.print_aligned_center("[ 고객 계정 정보 ]");
 
@@ -819,7 +820,7 @@ void Program::SetMenu()
 			IO.print("\n");
 
 			IO.print(format("보유한 3000원 쿠폰 개수 : {}\n", target->coupon_list.size()));
-			IO.print(format("다음 쿠폰까지 남은 금액 : {}원\n", 50000 - target->accumulated));
+			IO.print(format("다음 쿠폰까지 남은 금액 : {}원\n", target->accumulated));
 
 			IO.print_line();
 
@@ -841,7 +842,7 @@ void Program::SetMenu()
 					else if (command == 'm') {
 						menu_manager->RunMenu(MENU_ACCOUNT_INFO_M, target);
 					}
-					else if (command == 'm') {
+					else if (command == 'c') {
 						menu_manager->RunMenu(MENU_ACCOUNT_COUPON, target->coupon_list);
 					}
 				}
@@ -1285,8 +1286,9 @@ void Program::SetMenu()
 			if (input == "y") {
 				int id = (int)shop_manager->GetInvoiceList().size();
 				target->count -= count; //제품 개수 업데이트
-				 
-				user->coupon_list.erase(user->coupon_list.begin(), user->coupon_list.begin() + coupon_count + 1);
+
+				if(coupon_count > 0)
+					user->coupon_list.erase(user->coupon_list.begin(), user->coupon_list.begin() + coupon_count + 1);
 
 				invoice.push_back(to_string(count));
 				invoice.push_back(to_string(price));

@@ -93,13 +93,13 @@ public:
 	string recipient_phone_number;
 	string recipient_address;
 	chrono::system_clock::time_point date;
-	chrono::system_clock::time_point confirm_date;
 	int product_id;
 	int product_count;
 	int price;
 	int coupon_count;
 	int final_price;
 	InvoiceState state;
+	chrono::system_clock::time_point confirm_date;
 
 	string GetState(); 
 

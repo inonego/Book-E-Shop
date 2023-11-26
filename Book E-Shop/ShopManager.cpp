@@ -116,7 +116,7 @@ chrono::system_clock::time_point ShopManager::GetLastDate()
 		Account* account = account_list[p];
 
 		// 마지막 쿠폰(가장 최근에 발급된 쿠폰)의 날짜를 불러옴 
-		if (account_list.size() != 0) { 
+		if (account->coupon_list.size() != 0) { 
 			 result = max(result, account->coupon_list[account_list.size() - 1]);
 		}
 
@@ -133,16 +133,24 @@ chrono::system_clock::time_point ShopManager::GetLastDate()
 			}
 			 
 			switch (invoice->state) {
-			case PURCHASED:
-				last_date = invoice->date;
-				break;
-			case CONFIRMED:
-			case CONFIRMED_V:
-				last_date = invoice->confirm_date;
-				break;
+
+				case PURCHASED:
+					last_date = invoice->date;
+					cout << last_date << endl;
+					break;
+
+				case CONFIRMED:
+
+					break;
+
+				case CONFIRMED_V:
+					last_date = invoice->confirm_date;
+					cout << last_date << endl;
+					break;
 			} 
 
 			result = max(result, last_date);
+
 		}
 	} 
 
