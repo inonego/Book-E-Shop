@@ -25,7 +25,7 @@ void Program::Run()
 	SetParser();
 	SetMenu();
 
-	menu_manager->Start(MENU_START);
+	menu_manager->Start(MENU_DATE);
 }
 
 void Program::LoadCSV()
@@ -295,8 +295,8 @@ void Program::SetMenu()
 
 		chrono::system_clock::time_point min_date = shop_manager->GetLastDate();
 
-		IO.print("현재 날짜(YY.MM.DD 형식)를 입력하세요.");
-		IO.print(format("(날짜는 {0} 당일 또는 그 이후여야 합니다.)\n", date_to_string(min_date)));
+		IO.print_aligned_center("현재 날짜(YY.MM.DD 형식)를 입력하세요.");
+		IO.print_aligned_center(format("(날짜는 {0} 당일 또는 그 이후여야 합니다.)", date_to_string(min_date)));
 
 		auto checkpoint = IO.checkpoint();
 
@@ -918,14 +918,14 @@ void Program::SetMenu()
 		TemplateTable<int> _template;
 		_template.SetName("구매 내역");
 		_template.header_func = []() -> string {
-			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<18}", "구매 날짜", "제목", "저자", "결제 금액", "상태");
+			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<19}", "구매 날짜", "제목", "저자", "결제 금액", "상태");
 		};
 		_template.show_func = [](int id) -> string {
 			Invoice* invoice = shop_manager->GetInvoice(id);
 			Product* product = shop_manager->GetProduct(invoice->product_id);
 
-			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<18}", limit(date_to_string(invoice->date),10), limit(product->title, 18), limit(product->author, 8),
-				limit(to_string(invoice->final_price), 10) + "원", limit(invoice->GetState(),15));
+			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<19}", limit(date_to_string(invoice->date),10), limit(product->title, 18), limit(product->author, 8),
+				limit(to_string(invoice->final_price), 10) + "원", invoice->GetState());
 		};
 
 		_template.next_menu_code = MENU_INVOICE_INFO;
@@ -1119,6 +1119,7 @@ void Program::SetMenu()
 			IO.print(format("재고 : {0}\n", target->count));
 
 			shop_manager->GetCurrentAccount()->AddRecentProduct(target->id);
+			menu_manager->GetMenu(MENU_B_PRODUCT_RECENT)->SetArgs(shop_manager->GetCurrentAccount()->recent_product_id_list);
 
 			IO.print_line(false);
 
@@ -1300,7 +1301,7 @@ void Program::SetMenu()
 
 				Invoice* result = new Invoice(invoice);
 
-				result->date = today();
+				result->date = now;
 				result->recipient_phone_number = recipient_phone_number;
 				result->recipient_address = recipient_address;
 

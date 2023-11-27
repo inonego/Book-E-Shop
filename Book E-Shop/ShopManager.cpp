@@ -27,6 +27,8 @@ void ShopManager::Confirm(chrono::system_clock::time_point now, Invoice* invoice
 {
 	if (invoice->state != PURCHASED) return;
 	
+	invoice->confirm_date = now;
+
 	invoice->state = CONFIRMED;
 
 	bool couponed = false;
@@ -127,30 +129,25 @@ chrono::system_clock::time_point ShopManager::GetLastDate()
 			
 			chrono::system_clock::time_point last_date = string_to_date("00.01.01");
 
+			/*
 			// 자동으로 구매 확정되는 7일 + 누적 금액
 			if (day_diff(invoice->date, result) >= CONFIRM_DATE + ACCUMULATED_EXPIRE_DATE) {
 				break;
 			}
-			 
+			 */
+
 			switch (invoice->state) {
 
 				case PURCHASED:
 					last_date = invoice->date;
-					cout << last_date << endl;
 					break;
-
 				case CONFIRMED:
-
-					break;
-
 				case CONFIRMED_V:
 					last_date = invoice->confirm_date;
-					cout << last_date << endl;
 					break;
 			} 
 
 			result = max(result, last_date);
-
 		}
 	} 
 
