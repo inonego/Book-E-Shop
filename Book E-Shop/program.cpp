@@ -569,7 +569,7 @@ void Program::SetMenu()
 			IO.print_line();
 			IO.print_aligned_center("[ 상품 신규 등록 ]");
 
-			if (shop_manager->GetProductList().size() > 999999) {
+			if (shop_manager->GetProductList(true).size() > 999999) {
 				IO.print("더 이상 상품을 등록할 수 없습니다.\n");
 				IO.pause();
 				
@@ -580,7 +580,7 @@ void Program::SetMenu()
 
 			vector<string> parser_key = { "product_title", "product_genre", "product_author", "product_price", "product_count" };
 			
-			int id = (int)shop_manager->GetProductList().size();
+			int id = (int)shop_manager->GetProductList(true).size();
 
 			product.push_back(to_string(id));
 
@@ -926,7 +926,7 @@ void Program::SetMenu()
 		};
 		_template.show_func = [](int id) -> string {
 			Invoice* invoice = shop_manager->GetInvoice(id);
-			Product* product = shop_manager->GetProduct(invoice->product_id);
+			Product* product = shop_manager->GetProduct(invoice->product_id, true);
 
 			return format("{0:<12}{1:<20}{2:<10}{3:<12}{4:<19}", limit(date_to_string(invoice->date),10), limit(product->title, 18), limit(product->author, 8),
 				limit(to_string(invoice->final_price), 10) + "원", invoice->GetState());
@@ -945,7 +945,7 @@ void Program::SetMenu()
 			IO.print_aligned_center("[ 주문 상세 정보 ]");
 
 			Invoice* target = shop_manager->GetInvoice(target_id);
-			Product* product = shop_manager->GetProduct(target->product_id);
+			Product* product = shop_manager->GetProduct(target->product_id, true);
 			Account* account = shop_manager->GetAccount(target->buyer_id);
 
 			IO.print(format("구매 날짜 : {0}\n", date_to_string(target->date)));
