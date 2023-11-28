@@ -38,7 +38,7 @@ public:
 	string author;
 	int price;
 	int count;
-	bool deleted;
+	bool deleted = false;
 
 	virtual string GetKey() override;
 	virtual vector<string> ToArray() override;

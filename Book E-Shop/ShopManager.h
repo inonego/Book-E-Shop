@@ -60,14 +60,11 @@ public:
 
 	void EnableProduct(Product* product) {
 		if (product != nullptr) {
-			product->deleted = false;
-
 			if (find(live_product_list.begin(), live_product_list.end(), product) == live_product_list.end()) live_product_list.push_back(product);
 		}
 	};
 	void DisableProduct(Product* product) {
 		if (product != nullptr) {
-			product->deleted = true;
 			product->count = 0;
 
 			live_product_list.erase(remove(live_product_list.begin(), live_product_list.end(), product), live_product_list.end());

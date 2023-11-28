@@ -37,7 +37,10 @@ void Program::LoadCSV()
 		auto product = new Product(product_raw[i]);
 
 		shop_manager->AddProduct(product);
-		shop_manager->EnableProduct(product);
+
+		if (!product->deleted) { 
+			shop_manager->EnableProduct(product);
+		}
 	}
 
 	// Account CSV 파일을 파싱합니다.
@@ -738,6 +741,7 @@ void Program::SetMenu()
 			string input = IO.input("상품 등록 정보를 제거하시겠습니까? (y / n)");
 
 			if (input == "y") {
+				target->deleted = true;
 				shop_manager->DisableProduct(target);
 
 				IO.print(format("\n상품({0})의 등록 정보가 제거되었습니다.\n", target->id));
@@ -1326,20 +1330,22 @@ void Program::SetMenu()
 			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", "ID", "상품", "장르", "저자", "가격", "재고");
 		};
 		_template.show_func = [](int id) -> string {
-			Product* product = shop_manager->GetProduct(id);
+			Product* product = shop_manager->GetProduct(id, true);
 
 			return format("{0:<10}{1:<20}{2:<10}{3:<20}{4:<12}{5:<8}", format("{0:06}", product->id), limit(product->title, 18), limit(product->genre, 8), limit(product->author, 18), limit(to_string(product->price), 10) + "원", limit(to_string(product->count), 6));
 		};
+		_template.max_size = 10;
 
 		_template.next_menu_code = MENU_B_PRODUCT_INFO;
 
 		_template.process_func = [=](MenuIO& IO, MenuCode next_menu_code, int id) { 
-			Product* product = shop_manager->GetProduct(id);
+			Product* product = shop_manager->GetProduct(id, true);
 
 			if (product->deleted) {
 				IO.print("제거된 상품입니다.\n");
+				IO.pause();
 
-				menu_manager->RunMenu(MENU_B_PRODUCT_RECENT, id);
+				menu_manager->RunMenu(MENU_B_PRODUCT_RECENT, shop_manager->GetCurrentAccount()->recent_product_id_list);
 			}
 			else {
 				menu_manager->RunMenu(next_menu_code, product); 
@@ -1388,8 +1394,10 @@ void Program::SetMenu()
 
 			if (input == "y") {
 				if (product->deleted) {
+					product->deleted = false;
 					shop_manager->EnableProduct(product);
 				} 
+
 				product->count += target->product_count;
 
 				target->state = REFUNDED;

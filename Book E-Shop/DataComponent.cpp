@@ -24,7 +24,7 @@ Product::Product(vector<string> data)
 	author = data[3];
 	price = stoi(data[4]);
 	count = stoi(data[5]);
-	deleted = data[6]._Equal("TRUE");
+	deleted = data[6] == "TRUE";
 };
 
 string Product::GetKey()
@@ -47,8 +47,8 @@ Account::Account(vector<string> data)
 		string phone_number;
 		string address;
 		vector<int> invoice_id_list;
-		int coupon_count;
-		int accumulated;
+		vector<chrono::system_clock::time_point> coupon_list;
+		vector<int> recent_product_id_list;
 	*/
 
 	name = data[0];
@@ -60,16 +60,19 @@ Account::Account(vector<string> data)
 	stringstream sstream; 
 	string input;
 
+	sstream.clear();
 	sstream.str(data[5]);
 	while (getline(sstream, input, '/')) {
 		invoice_id_list.push_back(stoi(input));
 	}  
 
+	sstream.clear();
 	sstream.str(data[6]);
 	while (getline(sstream, input, '/')) {
 		coupon_list.push_back(string_to_date(input));
 	}
 
+	sstream.clear();
 	sstream.str(data[7]); 
 	while (getline(sstream, input, '/')) {
 		recent_product_id_list.push_back(stoi(input));

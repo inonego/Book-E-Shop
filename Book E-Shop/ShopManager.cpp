@@ -119,7 +119,7 @@ chrono::system_clock::time_point ShopManager::GetLastDate()
 
 		// 마지막 쿠폰(가장 최근에 발급된 쿠폰)의 날짜를 불러옴 
 		if (account->coupon_list.size() != 0) { 
-			 result = max(result, account->coupon_list[account_list.size() - 1]);
+			 result = max(result, account->coupon_list[account->coupon_list.size() - 1]);
 		}
 
 		for (int i = 0; i < account->invoice_id_list.size(); i++) {

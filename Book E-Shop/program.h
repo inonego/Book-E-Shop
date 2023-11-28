@@ -104,6 +104,7 @@ public:
 		unordered_map<char, pair<string, action>> menu; 
 	public:  
 		int max_count = 10;  
+		int max_size = -1;
 
 		MenuCode next_menu_code = MENU_NONE;
 
@@ -118,7 +119,14 @@ public:
 
 		void Apply(MenuCode menu_code) override {
 			auto func = [=, k = *this](MenuIO& IO, vector<T>&& v) {
+
 				TemplateTable<T> setting = k;
+
+				int max_size = (int)v.size();
+
+				if (setting.max_size != -1) {
+					max_size = min(setting.max_size, max_size);
+				}
 
 				if (setting.command_toggled) menu_manager->ToggleCommand(setting.command_availability);
 				menu_manager->PrintCommand();
@@ -141,13 +149,13 @@ public:
 				// 표의 헤더를 표시합니다.
 				IO.print_aligned_center(format("    {0}", setting.header_func()));
 
-				auto checkpoint = IO.checkpoint();
+				auto checkpoint = IO.checkpoint(); 
 
-				while (true) {
+				while (true) { 
 					for (int i = 0; i < setting.max_count; i++) {
 						int index = page * setting.max_count + i;
 
-						if (index < v.size()) {
+						if (index < max_size) {
 							// 각 요소에 해당하는 열을 출력합니다.
 							IO.print_aligned_center(format("({0}) {1}", i, setting.show_func(v[index])));
 						}
@@ -159,7 +167,7 @@ public:
 
 					IO.print_line(false);
 
-					int max_page = ((max((int)v.size() - 1, 0)) / setting.max_count) + 1; 
+					int max_page = ((max(max_size - 1, 0)) / setting.max_count) + 1;
 
 					IO.print_aligned_center(format("{0} / {1}\n", page + 1, max_page));
 					IO.print(format("{0:<{2}}{1:>{2}}\n", "< (B) 이전 페이지", "(N)다음 페이지 >", IO.width / 2));
@@ -185,11 +193,11 @@ public:
 					}
 					else {
 						// 데이터 요소 목록에서 선택
-						if (next_menu_code != MENU_NONE) {
+						if (setting.next_menu_code != MENU_NONE) {
 							if ('0' <= input && input <= '9') {
 								int n = page * setting.max_count + (input - '0');
 
-								if (n < v.size()) {
+								if (n < max_size) {
 									if (setting.process_func != nullptr) {
 										// 처리하는 함수가 존재하면 선택한 요소를 처리합니다.
 										setting.process_func(IO, setting.next_menu_code, v[n]);
