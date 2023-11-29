@@ -1293,7 +1293,7 @@ void Program::SetMenu()
 				target->count -= count; //제품 개수 업데이트
 
 				if(coupon_count > 0)
-					user->coupon_list.erase(user->coupon_list.begin(), user->coupon_list.begin() + coupon_count + 1);
+					user->coupon_list.erase(user->coupon_list.begin(), user->coupon_list.begin() + coupon_count);
 
 				invoice.push_back(to_string(count));
 				invoice.push_back(to_string(price));
