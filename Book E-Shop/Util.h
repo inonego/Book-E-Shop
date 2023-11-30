@@ -40,6 +40,21 @@ static std::chrono::system_clock::time_point string_to_date(std::string input) {
     return std::chrono::sys_days(a);
 }
 
+static const bool check_valid_date(std::string input) {
+    // 날짜 문자열로부터 파싱 
+    std::stringstream sstream(input);
+
+    std::string year, month, day;
+    getline(sstream, year, '.');
+    getline(sstream, month, '.');
+    getline(sstream, day, '.');
+
+    // std::chrono::year_month_day를 사용하여 날짜를 설정
+    std::chrono::year_month_day a(std::chrono::year(stoi(year) + 2000) / stoi(month) / stoi(day));
+
+    return a.year().ok() && a.month().ok() && a.day().ok() && a.day() <= (a.year() / a.month() / std::chrono::last).day();
+}
+
 static std::string date_to_string(std::chrono::system_clock::time_point time_point) {  
     std::chrono::year_month_day date{ floor<std::chrono::days>(time_point) };
 

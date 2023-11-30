@@ -106,6 +106,7 @@ void Program::SetParser()
 		->set_label("날짜")
 		->set_regex(LR"(^[0-9]{2}.[0-9]{2}.[0-9]{2}$)")
 		->set_msg_error("날짜 형식이 올바르지 않습니다.\n")
+		->set_check([=](string input) -> bool { return check_valid_date(input);	})
 	);
 
 #pragma region 상품 등록 정보 Parser
