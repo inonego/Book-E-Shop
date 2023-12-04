@@ -825,7 +825,7 @@ void Program::SetMenu()
 			IO.print("\n");
 
 			IO.print(format("보유한 3000원 쿠폰 개수 : {}\n", target->coupon_list.size()));
-			IO.print(format("다음 쿠폰까지 남은 금액 : {}원\n", target->accumulated));
+			IO.print(format("다음 쿠폰까지 남은 금액 : {}원\n", 50000 - shop_manager->GetAccumulated(target)));
 
 			IO.print_line();
 

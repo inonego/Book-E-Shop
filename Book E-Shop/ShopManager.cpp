@@ -22,27 +22,33 @@ void ShopManager::Logout()
 {
 	current_user = nullptr;
 } 
- 
+  
+int ShopManager::GetAccumulated(Account* account)
+{
+	int result = 0;
+
+	for (int i = 0; i < account->invoice_id_list.size(); i++) {
+		Invoice* invoice = invoice_list[account->invoice_id_list[i]];
+
+		if (invoice->state == CONFIRMED) {
+			result += invoice->final_price;
+		}
+	}
+
+	return result;
+}
+
 void ShopManager::Confirm(chrono::system_clock::time_point now, Invoice* invoice)
 {
 	if (invoice->state != PURCHASED) return;
 	
 	invoice->confirm_date = now;
-
 	invoice->state = CONFIRMED;
-
-	bool couponed = false;
-	int accumulated = 0;
 
 	Account* account = GetAccount(invoice->buyer_id);
 
-	for (int i = 0; i < account->invoice_id_list.size(); i++) {
-		Invoice* invoice = invoice_list[account->invoice_id_list[i]];
-
-		if (invoice->state == CONFIRMED) { 
-			accumulated += invoice->final_price;
-		}
-	}
+	bool couponed = false;
+	int accumulated = GetAccumulated(account);
 
 	// ÄíÆù ¹ß±Þ
 	while (accumulated >= 50000) {
@@ -54,6 +60,8 @@ void ShopManager::Confirm(chrono::system_clock::time_point now, Invoice* invoice
 	}
 
 	if (couponed) {
+		accumulated = 0;
+
 		for (int i = 0; i < account->invoice_id_list.size(); i++) {
 			Invoice* invoice = invoice_list[account->invoice_id_list[i]];
 

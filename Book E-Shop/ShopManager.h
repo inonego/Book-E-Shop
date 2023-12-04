@@ -79,6 +79,7 @@ public:
 	const vector<Account*>& GetAccountList() { return account_list; }
 	const vector<Invoice*>& GetInvoiceList() { return invoice_list; }
 
+	int GetAccumulated(Account* account);
 	void Confirm(chrono::system_clock::time_point now, Invoice* invoice);
 	void UpdateCouponList(chrono::system_clock::time_point now, vector<chrono::system_clock::time_point>& coupon_list);
 	void UpdateInvoiceList(chrono::system_clock::time_point now, vector<int>& invoice_id_list);
