@@ -96,11 +96,18 @@ void ShopManager::UpdateInvoiceList(chrono::system_clock::time_point now, vector
 		// 구매 후 7일이 지난 경우 구매 확정으로 변경합니다.
 		if (invoice->state == PURCHASED) {
 			if (day_diff(invoice->date, now) >= CONFIRM_DATE) {
-				Confirm(now, invoice);
+				Confirm(invoice->date + std::chrono::days(CONFIRM_DATE), invoice);
 			}
 		}
+	}
+
+	for (int i = 0; i < invoice_id_list.size(); i++) {
+		int index = (int)invoice_id_list.size() - i - 1;
+
+		Invoice* invoice = invoice_list[invoice_id_list[index]];
+
 		// '구매 확정' 후 7일이 지난 경우 '구매 확정(구매 확정 누적 금액 계산에서 제외)'으로 변경합니다.
-		else if (invoice->state == CONFIRMED) {
+		if (invoice->state == CONFIRMED) {
 			if (day_diff(invoice->confirm_date, now) >= ACCUMULATED_EXPIRE_DATE) {
 				invoice->state = CONFIRMED_V;
 			}
@@ -113,8 +120,8 @@ void ShopManager::UpdateAll(chrono::system_clock::time_point now)
 	for (int i = 0; i < account_list.size(); i++) {
 		Account* account = account_list[i]; 
 
-		UpdateCouponList(now, account->coupon_list);
 		UpdateInvoiceList(now, account->invoice_id_list);
+		UpdateCouponList(now, account->coupon_list);
 	}
 }
 
